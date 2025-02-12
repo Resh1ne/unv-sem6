@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EditorPanel extends JPanel {
-    private final List<Point> points = new ArrayList<>(); // Список для хранения точек
+    private final List<List<Point>> allLines = new ArrayList<>(); // Список всех отрезков
+    private final List<Point> currentLine = new ArrayList<>(); // Текущий отрезок
     private Point startPoint = null; // Начальная точка
     private ShapeType shapeType = ShapeType.LINE; // Выбранная фигура
     private AlgorithmType algorithmType = AlgorithmType.DDA; // Выбранный алгоритм
@@ -40,10 +41,18 @@ public class EditorPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Рисуем все точки
-        for (int i = 0; i < points.size() - 1; i++) {
-            Point p1 = points.get(i);
-            Point p2 = points.get(i + 1);
+        // Рисуем все отрезки
+        for (List<Point> line : allLines) {
+            for (int i = 0; i < line.size() - 1; i++) {
+                Point p1 = line.get(i);
+                Point p2 = line.get(i + 1);
+                g.drawLine(p1.x, p1.y, p2.x, p2.y);
+            }
+        }
+        // Рисуем текущий отрезок (если он есть)
+        for (int i = 0; i < currentLine.size() - 1; i++) {
+            Point p1 = currentLine.get(i);
+            Point p2 = currentLine.get(i + 1);
             g.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
     }
@@ -72,14 +81,21 @@ public class EditorPanel extends JPanel {
      * @param end   Конечная точка.
      */
     private void drawLine(Point start, Point end) {
+        // Очищаем текущий отрезок
+        currentLine.clear();
+
+        // Генерируем точки для текущего отрезка
         switch (algorithmType) {
             case DDA:
-                points.addAll(DDAAlgorithm.drawLineDDA(start.x, start.y, end.x, end.y));
+                currentLine.addAll(DDAAlgorithm.drawLineDDA(start.x, start.y, end.x, end.y));
                 break;
             case BRESENHAM:
-                points.addAll(BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y));
+                currentLine.addAll(BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y));
                 break;
         }
+
+        // Добавляем текущий отрезок в список всех отрезков
+        allLines.add(new ArrayList<>(currentLine));
     }
 
     // Сеттеры для выбора фигуры и алгоритма
