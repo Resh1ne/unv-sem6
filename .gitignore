@@ -1,0 +1,56 @@
+# IntelliJ IDEA specific files
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Ignore project-specific configuration
+/out/
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/shelf/
+/.idea/libraries/
+
+# Ignore build artifacts
+/target/
+/build/
+/dist/
+
+# Ignore logs and temp files
+*.log
+*.tmp
+hs_err_pid*
+
+# Ignore compiled Java classes
+*.class
+*.jar
+*.war
+*.ear
+*.dll
+*.exe
+*.so
+*.dylib
+*.nupkg
+
+# Ignore Maven & Gradle specific files
+/.mvn/
+/.gradle/
+/build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Ignore dependency caches
+**/node_modules/
+**/.cache/
+/.npm/
+/.yarn-cache/
+/.yarn/
+/.pnp/
+
+# Ignore database files
+*.db
+*.sqlite
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
