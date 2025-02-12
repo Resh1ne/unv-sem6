@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class GraphicsEditor extends JFrame {
 
-    private final JTabbedPane tabbedPane;
+    private final EditorPanel editorPanel;
 
     public GraphicsEditor() {
         setTitle("Графический редактор");
@@ -13,26 +13,58 @@ public class GraphicsEditor extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Создаем вкладки
-        tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Редактор", new EditorPanel());
-        tabbedPane.addTab("Отладка", new DebugPanel());
+        // Создаем главные вкладки
+        JTabbedPane mainTabbedPane = new JTabbedPane();
+        editorPanel = new EditorPanel();
+        mainTabbedPane.addTab("Редактор", editorPanel);
+        mainTabbedPane.addTab("Отладка", new DebugPanel());
 
-        // Добавляем вкладки в окно
-        add(tabbedPane);
+        // Добавляем главные вкладки в окно
+        add(mainTabbedPane);
 
-        // Создаем панель инструментов
+        // Создаем панель инструментов для выбора фигуры и алгоритма
         JToolBar toolBar = new JToolBar();
-        JButton editorButton = new JButton("Редактор");
-        JButton debugButton = new JButton("Отладка");
+        JComboBox<ShapeType> shapeComboBox = new JComboBox<>(ShapeType.values());
+        JComboBox<AlgorithmType> algorithmComboBox = new JComboBox<>(AlgorithmType.values());
 
-        editorButton.addActionListener(e -> tabbedPane.setSelectedIndex(0));
-        debugButton.addActionListener(e -> tabbedPane.setSelectedIndex(1));
+        // Обработка выбора фигуры
+        shapeComboBox.addActionListener(e -> {
+            ShapeType selectedShape = (ShapeType) shapeComboBox.getSelectedItem();
+            editorPanel.setShapeType(selectedShape);
+            assert selectedShape != null;
+            updateAlgorithmComboBox(algorithmComboBox, selectedShape);
+        });
 
-        toolBar.add(editorButton);
-        toolBar.add(debugButton);
+        // Обработка выбора алгоритма
+        algorithmComboBox.addActionListener(e -> {
+            AlgorithmType selectedAlgorithm = (AlgorithmType) algorithmComboBox.getSelectedItem();
+            editorPanel.setAlgorithmType(selectedAlgorithm);
+        });
+
+        toolBar.add(new JLabel("Фигура: "));
+        toolBar.add(shapeComboBox);
+        toolBar.add(new JLabel("Алгоритм: "));
+        toolBar.add(algorithmComboBox);
 
         add(toolBar, BorderLayout.NORTH);
+    }
+
+    /**
+     * Обновляет доступные алгоритмы в зависимости от выбранной фигуры.
+     *
+     * @param algorithmComboBox Комбобокс с алгоритмами.
+     * @param shapeType         Выбранная фигура.
+     */
+    private void updateAlgorithmComboBox(JComboBox<AlgorithmType> algorithmComboBox, ShapeType shapeType) {
+        algorithmComboBox.removeAllItems();
+        switch (shapeType) {
+            case LINE:
+                algorithmComboBox.addItem(AlgorithmType.DDA);
+                algorithmComboBox.addItem(AlgorithmType.BRESENHAM);
+                break;
+            case CIRCLE:
+                break;
+        }
     }
 
     public static void main(String[] args) {

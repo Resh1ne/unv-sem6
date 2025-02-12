@@ -1,6 +1,7 @@
 package com.example.graphicseditor;
 
 import com.example.algorithms.DDAAlgorithm;
+import com.example.algorithms.BresenhamAlgorithm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,8 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EditorPanel extends JPanel {
-    private final List<Point> lines = new ArrayList<>(); // Список для хранения точек отрезков
-    private Point startPoint = null; // Начальная точка отрезка
+    private final List<Point> points = new ArrayList<>(); // Список для хранения точек
+    private Point startPoint = null; // Начальная точка
+    private ShapeType shapeType = ShapeType.LINE; // Выбранная фигура
+    private AlgorithmType algorithmType = AlgorithmType.DDA; // Выбранный алгоритм
 
     public EditorPanel() {
         setBackground(Color.WHITE);
@@ -24,10 +27,9 @@ public class EditorPanel extends JPanel {
                     // Если начальная точка не задана, сохраняем её
                     startPoint = e.getPoint();
                 } else {
-                    // Если начальная точка задана, рисуем отрезок до текущей точки
+                    // Если начальная точка задана, рисуем фигуру
                     Point endPoint = e.getPoint();
-                    List<Point> linePoints = DDAAlgorithm.drawLineDDA(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
-                    lines.addAll(linePoints); // Добавляем все точки отрезка
+                    drawShape(startPoint, endPoint);
                     startPoint = null; // Сбрасываем начальную точку
                     repaint(); // Перерисовываем панель
                 }
@@ -38,11 +40,54 @@ public class EditorPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        // Рисуем все отрезки
-        for (int i = 0; i < lines.size() - 1; i++) {
-            Point p1 = lines.get(i);
-            Point p2 = lines.get(i + 1);
+        // Рисуем все точки
+        for (int i = 0; i < points.size() - 1; i++) {
+            Point p1 = points.get(i);
+            Point p2 = points.get(i + 1);
             g.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
+    }
+
+    /**
+     * Рисует фигуру в зависимости от выбранного типа и алгоритма.
+     *
+     * @param start Начальная точка.
+     * @param end   Конечная точка.
+     */
+    private void drawShape(Point start, Point end) {
+        switch (shapeType) {
+            case LINE:
+                drawLine(start, end);
+                break;
+            case CIRCLE:
+                // В будущем можно добавить рисование круга
+                break;
+        }
+    }
+
+    /**
+     * Рисует отрезок в зависимости от выбранного алгоритма.
+     *
+     * @param start Начальная точка.
+     * @param end   Конечная точка.
+     */
+    private void drawLine(Point start, Point end) {
+        switch (algorithmType) {
+            case DDA:
+                points.addAll(DDAAlgorithm.drawLineDDA(start.x, start.y, end.x, end.y));
+                break;
+            case BRESENHAM:
+                points.addAll(BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y));
+                break;
+        }
+    }
+
+    // Сеттеры для выбора фигуры и алгоритма
+    public void setShapeType(ShapeType shapeType) {
+        this.shapeType = shapeType;
+    }
+
+    public void setAlgorithmType(AlgorithmType algorithmType) {
+        this.algorithmType = algorithmType;
     }
 }
