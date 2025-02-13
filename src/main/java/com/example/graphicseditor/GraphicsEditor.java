@@ -61,6 +61,7 @@ public class GraphicsEditor extends JFrame {
             case LINE:
                 algorithmComboBox.addItem(AlgorithmType.DDA);
                 algorithmComboBox.addItem(AlgorithmType.BRESENHAM);
+                algorithmComboBox.addItem(AlgorithmType.WU);
                 break;
             case CIRCLE:
                 break;

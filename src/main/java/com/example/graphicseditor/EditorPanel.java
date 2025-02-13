@@ -2,6 +2,7 @@ package com.example.graphicseditor;
 
 import com.example.algorithms.DDAAlgorithm;
 import com.example.algorithms.BresenhamAlgorithm;
+import com.example.algorithms.WuAlgorithm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,6 +92,9 @@ public class EditorPanel extends JPanel {
                 break;
             case BRESENHAM:
                 currentLine.addAll(BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y));
+                break;
+            case WU:
+                currentLine.addAll(WuAlgorithm.drawLineWu(start.x, start.y, end.x, end.y));
                 break;
         }
 
