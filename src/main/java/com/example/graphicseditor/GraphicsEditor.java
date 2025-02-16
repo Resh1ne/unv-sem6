@@ -5,8 +5,6 @@ import java.awt.*;
 
 public class GraphicsEditor extends JFrame {
 
-    private final EditorPanel editorPanel;
-
     public GraphicsEditor() {
         setTitle("Графический редактор");
         setSize(800, 600);
@@ -15,14 +13,16 @@ public class GraphicsEditor extends JFrame {
 
         // Создаем главные вкладки
         JTabbedPane mainTabbedPane = new JTabbedPane();
-        editorPanel = new EditorPanel();
+        EditorPanel editorPanel = new EditorPanel();
+        DebugPanel debugPanel = new DebugPanel(); // Независимый DebugPanel
+
         mainTabbedPane.addTab("Редактор", editorPanel);
-        mainTabbedPane.addTab("Отладка", new DebugPanel());
+        mainTabbedPane.addTab("Отладка", debugPanel);
 
         // Добавляем главные вкладки в окно
         add(mainTabbedPane);
 
-        // Создаем панель инструментов для выбора фигуры и алгоритма
+        // Панель инструментов
         JToolBar toolBar = new JToolBar();
         JComboBox<ShapeType> shapeComboBox = new JComboBox<>(ShapeType.values());
         JComboBox<AlgorithmType> algorithmComboBox = new JComboBox<>(AlgorithmType.values());
@@ -31,7 +31,7 @@ public class GraphicsEditor extends JFrame {
         shapeComboBox.addActionListener(e -> {
             ShapeType selectedShape = (ShapeType) shapeComboBox.getSelectedItem();
             editorPanel.setShapeType(selectedShape);
-            assert selectedShape != null;
+            debugPanel.setShapeType(selectedShape); // DebugPanel также меняет фигуру
             updateAlgorithmComboBox(algorithmComboBox, selectedShape);
         });
 
@@ -39,6 +39,7 @@ public class GraphicsEditor extends JFrame {
         algorithmComboBox.addActionListener(e -> {
             AlgorithmType selectedAlgorithm = (AlgorithmType) algorithmComboBox.getSelectedItem();
             editorPanel.setAlgorithmType(selectedAlgorithm);
+            debugPanel.setAlgorithmType(selectedAlgorithm); // DebugPanel использует тот же алгоритм
         });
 
         toolBar.add(new JLabel("Фигура: "));
@@ -49,12 +50,6 @@ public class GraphicsEditor extends JFrame {
         add(toolBar, BorderLayout.NORTH);
     }
 
-    /**
-     * Обновляет доступные алгоритмы в зависимости от выбранной фигуры.
-     *
-     * @param algorithmComboBox Комбобокс с алгоритмами.
-     * @param shapeType         Выбранная фигура.
-     */
     private void updateAlgorithmComboBox(JComboBox<AlgorithmType> algorithmComboBox, ShapeType shapeType) {
         algorithmComboBox.removeAllItems();
         switch (shapeType) {
