@@ -14,8 +14,6 @@ public class EditorPanel extends JPanel {
     private final List<Point> currentLine = new ArrayList<>(); // Текущий отрезок (Point)
     private final List<List<Pixel>> allWuLines = new ArrayList<>(); // Список всех отрезков (Pixel)
     private final List<Pixel> currentWuLine = new ArrayList<>(); // Текущий отрезок (Pixel)
-    private final List<List<Point>> allCircles = new ArrayList<>(); // Список всех кругов (Point)
-    private final List<Point> currentCircle = new ArrayList<>(); // Текущий круг (Point)
     private Point startPoint = null; // Начальная точка
     private ShapeType shapeType = ShapeType.LINE; // Выбранная фигура
     private AlgorithmType algorithmType = AlgorithmType.DDA; // Выбранный алгоритм
@@ -46,6 +44,21 @@ public class EditorPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
+        // Рисуем все отрезки (Point)
+        for (List<Point> line : allLines) {
+            for (int i = 0; i < line.size() - 1; i++) {
+                Point p1 = line.get(i);
+                Point p2 = line.get(i + 1);
+                g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+            }
+        }
+
+        // Рисуем текущий отрезок (Point)
+        for (int i = 0; i < currentLine.size() - 1; i++) {
+            Point p1 = currentLine.get(i);
+            Point p2 = currentLine.get(i + 1);
+            g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
+        }
         // Рисуем все отрезки (Pixel)
         for (List<Pixel> line : allWuLines) {
             for (Pixel pixel : line) {
@@ -62,37 +75,6 @@ public class EditorPanel extends JPanel {
             g2d.fillRect(pixel.getX(), pixel.getY(), 1, 1);
         }
 
-        // Рисуем все отрезки (Point)
-        for (List<Point> line : allLines) {
-            for (int i = 0; i < line.size() - 1; i++) {
-                Point p1 = line.get(i);
-                Point p2 = line.get(i + 1);
-                g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-            }
-        }
-
-        // Рисуем текущий отрезок (Point)
-        for (int i = 0; i < currentLine.size() - 1; i++) {
-            Point p1 = currentLine.get(i);
-            Point p2 = currentLine.get(i + 1);
-            g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-        }
-
-        // Рисуем все круги (Point)
-        for (List<Point> circle : allCircles) {
-            for (int i = 0; i < circle.size() - 1; i++) {
-                Point p1 = circle.get(i);
-                Point p2 = circle.get(i + 1);
-                g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-            }
-        }
-
-        // Рисуем текущий круг (Point)
-        for (int i = 0; i < currentCircle.size() - 1; i++) {
-            Point p1 = currentCircle.get(i);
-            Point p2 = currentCircle.get(i + 1);
-            g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-        }
     }
 
     /**
@@ -139,17 +121,11 @@ public class EditorPanel extends JPanel {
         }
     }
 
-    /**
-     * Рисует круг.
-     *
-     * @param center Центр круга.
-     * @param edge   Точка на окружности.
-     */
     private void drawCircle(Point center, Point edge) {
-        currentCircle.clear(); // Очищаем текущий круг
+        currentLine.clear();
         int radius = (int) Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
-        currentCircle.addAll(CircleAlgorithm.drawCircleBresenham(center.x, center.y, radius));
-        allCircles.add(new ArrayList<>(currentCircle));
+        currentLine.addAll(CircleAlgorithm.drawCircleBresenham(center.x, center.y, radius));
+        allLines.add(new ArrayList<>(currentLine));
     }
 
     // Сеттеры для выбора фигуры и алгоритма
