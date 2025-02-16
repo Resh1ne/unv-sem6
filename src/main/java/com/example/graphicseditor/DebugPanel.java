@@ -4,6 +4,7 @@ import com.example.algorithms.DDAAlgorithm;
 import com.example.algorithms.BresenhamAlgorithm;
 import com.example.algorithms.WuAlgorithm;
 import com.example.algorithms.CircleAlgorithm;
+import com.example.algorithms.Pixel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DebugPanel extends JPanel {
-    private final List<Point> debugPoints = new ArrayList<>();
+    private final List<Point> debugPoints = new ArrayList<>(); // Для алгоритмов, использующих Point
+    private final List<Pixel> debugPixels = new ArrayList<>(); // Для алгоритма Ву
     private Point startPoint = null; // Начальная точка
     private ShapeType shapeType = ShapeType.LINE; // Выбранная фигура
     private AlgorithmType algorithmType = AlgorithmType.DDA; // Выбранный алгоритм
@@ -45,10 +47,17 @@ public class DebugPanel extends JPanel {
 
         drawGrid(g2); // Рисуем сетку
 
-        // Рисуем точки белым цветом
+        // Рисуем точки (Point) белым цветом
         g2.setColor(Color.WHITE);
         for (Point p : debugPoints) {
             g2.fillRect(p.x * SCALE, p.y * SCALE, SCALE, SCALE);
+        }
+
+        // Рисуем пиксели (Pixel) с учётом интенсивности
+        for (Pixel pixel : debugPixels) {
+            float brightness = pixel.getBrightness();
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, brightness));
+            g2.fillRect(pixel.getX() * SCALE, pixel.getY() * SCALE, SCALE, SCALE);
         }
     }
 
@@ -80,6 +89,7 @@ public class DebugPanel extends JPanel {
      */
     private void drawShape(Point start, Point end) {
         debugPoints.clear();
+        debugPixels.clear();
         repaint();
 
         switch (shapeType) {
@@ -96,22 +106,25 @@ public class DebugPanel extends JPanel {
      * Рисует линию выбранным алгоритмом.
      */
     private void drawLine(Point start, Point end) {
-        List<Point> points;
-        switch (algorithmType) {
-            case DDA:
-                points = DDAAlgorithm.drawLineDDA(start.x, start.y, end.x, end.y);
-                break;
-            case BRESENHAM:
-                points = BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y);
-                break;
-            case WU:
-                points = WuAlgorithm.drawLineWu(start.x, start.y, end.x, end.y);
-                break;
-            default:
-                points = new ArrayList<>();
+        if (algorithmType == AlgorithmType.WU) {
+            // Используем Pixel для алгоритма Ву
+            List<Pixel> pixels = WuAlgorithm.drawLineWu(start.x, start.y, end.x, end.y);
+            animateDrawing(pixels);
+        } else {
+            // Используем Point для остальных алгоритмов
+            List<Point> points;
+            switch (algorithmType) {
+                case DDA:
+                    points = DDAAlgorithm.drawLineDDA(start.x, start.y, end.x, end.y);
+                    break;
+                case BRESENHAM:
+                    points = BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y);
+                    break;
+                default:
+                    points = new ArrayList<>();
+            }
+            animateDrawing(points);
         }
-
-        animateDrawing(points);
     }
 
     /**
@@ -125,12 +138,16 @@ public class DebugPanel extends JPanel {
     }
 
     /**
-     * Анимированное добавление точек.
+     * Анимированное добавление точек или пикселей.
      */
-    private void animateDrawing(List<Point> points) {
+    private void animateDrawing(List<?> elements) {
         new Thread(() -> {
-            for (Point p : points) {
-                debugPoints.add(p);
+            for (Object element : elements) {
+                if (element instanceof Point) {
+                    debugPoints.add((Point) element);
+                } else if (element instanceof Pixel) {
+                    debugPixels.add((Pixel) element);
+                }
                 repaint();
                 try {
                     Thread.sleep(DELAY);

@@ -1,6 +1,5 @@
 package com.example.algorithms;
 
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +12,10 @@ public class WuAlgorithm {
      * @param y0 Начальная координата Y.
      * @param x1 Конечная координата X.
      * @param y1 Конечная координата Y.
-     * @return Список точек, составляющих отрезок.
+     * @return Список пикселей, составляющих отрезок.
      */
-    public static List<Point> drawLineWu(int x0, int y0, int x1, int y1) {
-        List<Point> points = new ArrayList<>();
+    public static List<Pixel> drawLineWu(int x0, int y0, int x1, int y1) {
+        List<Pixel> pixels = new ArrayList<>();
 
         boolean steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
         if (steep) {
@@ -29,8 +28,11 @@ public class WuAlgorithm {
             x1 = y1;
             y1 = temp;
         }
-        if (x0 > x1) {
-            // Если отрезок рисуется справа налево, меняем местами начальную и конечную точки
+
+        // Убедимся, что линия рисуется от первой точки к последней
+        boolean reverse = x0 > x1;
+        if (reverse) {
+            // Меняем местами начальную и конечную точки
             int temp = x0;
             x0 = x1;
             x1 = temp;
@@ -42,7 +44,7 @@ public class WuAlgorithm {
 
         float dx = x1 - x0;
         float dy = y1 - y0;
-        float gradient = dy / dx;
+        float gradient = dx == 0 ? 1 : dy / dx;
 
         // Первая точка
         float xend = Math.round(x0);
@@ -50,13 +52,15 @@ public class WuAlgorithm {
         float xgap = rfpart(x0 + 0.5f);
         int xpxl1 = (int) xend;
         int ypxl1 = ipart(yend);
+
         if (steep) {
-            points.add(new Point(ypxl1, xpxl1));
-            points.add(new Point(ypxl1 + 1, xpxl1));
+            plot(pixels, ypxl1, xpxl1, rfpart(yend) * xgap);
+            plot(pixels, ypxl1 + 1, xpxl1, fpart(yend) * xgap);
         } else {
-            points.add(new Point(xpxl1, ypxl1));
-            points.add(new Point(xpxl1, ypxl1 + 1));
+            plot(pixels, xpxl1, ypxl1, rfpart(yend) * xgap);
+            plot(pixels, xpxl1, ypxl1 + 1, fpart(yend) * xgap);
         }
+
         float intery = yend + gradient;
 
         // Вторая точка
@@ -65,30 +69,48 @@ public class WuAlgorithm {
         xgap = fpart(x1 + 0.5f);
         int xpxl2 = (int) xend;
         int ypxl2 = ipart(yend);
+
         if (steep) {
-            points.add(new Point(ypxl2, xpxl2));
-            points.add(new Point(ypxl2 + 1, xpxl2));
+            plot(pixels, ypxl2, xpxl2, rfpart(yend) * xgap);
+            plot(pixels, ypxl2 + 1, xpxl2, fpart(yend) * xgap);
         } else {
-            points.add(new Point(xpxl2, ypxl2));
-            points.add(new Point(xpxl2, ypxl2 + 1));
+            plot(pixels, xpxl2, ypxl2, rfpart(yend) * xgap);
+            plot(pixels, xpxl2, ypxl2 + 1, fpart(yend) * xgap);
         }
 
         // Основной цикл
         if (steep) {
             for (int x = xpxl1 + 1; x < xpxl2; x++) {
-                points.add(new Point(ipart(intery), x));
-                points.add(new Point(ipart(intery) + 1, x));
+                plot(pixels, ipart(intery), x, rfpart(intery));
+                plot(pixels, ipart(intery) + 1, x, fpart(intery));
                 intery += gradient;
             }
         } else {
             for (int x = xpxl1 + 1; x < xpxl2; x++) {
-                points.add(new Point(x, ipart(intery)));
-                points.add(new Point(x, ipart(intery) + 1));
+                plot(pixels, x, ipart(intery), rfpart(intery));
+                plot(pixels, x, ipart(intery) + 1, fpart(intery));
                 intery += gradient;
             }
         }
 
-        return points;
+        // Если точки были переставлены, разворачиваем список
+        if (reverse) {
+            reverseList(pixels);
+        }
+
+        return pixels;
+    }
+
+    /**
+     * Добавляет пиксель в список с учётом интенсивности.
+     *
+     * @param pixels     Список пикселей.
+     * @param x          Координата X.
+     * @param y          Координата Y.
+     * @param brightness Интенсивность пикселя (от 0 до 1).
+     */
+    private static void plot(List<Pixel> pixels, int x, int y, float brightness) {
+        pixels.add(new Pixel(x, y, brightness));
     }
 
     /**
@@ -119,5 +141,21 @@ public class WuAlgorithm {
      */
     private static float rfpart(float x) {
         return 1 - fpart(x);
+    }
+
+    /**
+     * Разворачивает список пикселей.
+     *
+     * @param pixels Список пикселей.
+     */
+    private static void reverseList(List<Pixel> pixels) {
+        int i = 0, j = pixels.size() - 1;
+        while (i < j) {
+            Pixel temp = pixels.get(i);
+            pixels.set(i, pixels.get(j));
+            pixels.set(j, temp);
+            i++;
+            j--;
+        }
     }
 }
