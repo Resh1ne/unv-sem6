@@ -24,11 +24,15 @@ public class DebugPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (shapeType == ShapeType.ELLIPSE) {
+                if (shapeType == ShapeType.ELLIPSE || shapeType == ShapeType.HYPERBOLA) {
                     if (startPoint == null) {
                         startPoint = snapToGrid(e.getPoint());
                     } else {
-                        showEllipseDialog(startPoint);
+                        if (shapeType == ShapeType.ELLIPSE) {
+                            showEllipseDialog(startPoint);
+                        } else {
+                            showHyperbolaDialog(startPoint);
+                        }
                         startPoint = null;
                     }
                 } else {
@@ -143,7 +147,38 @@ public class DebugPanel extends JPanel {
     }
 
     private void drawEllipse(Point center, int rx, int ry) {
+        debugPoints.clear();
+        debugPixels.clear();
+        repaint();
         List<Point> points = EllipseAlgorithm.drawEllipseBresenham(center.x, center.y, rx, ry);
+        animateDrawing(points);
+    }
+
+    private void showHyperbolaDialog(Point center) {
+        JTextField aField = new JTextField();
+        JTextField bField = new JTextField();
+        Object[] message = {
+                "Введите параметр a:", aField,
+                "Введите параметр b:", bField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Параметры гиперболы", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int a = Integer.parseInt(aField.getText());
+                int b = Integer.parseInt(bField.getText());
+                drawHyperbola(center, a, b);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Введите корректные числа!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void drawHyperbola(Point center, int a, int b) {
+        debugPoints.clear();
+        debugPixels.clear();
+        repaint();
+        List<Point> points = HyperbolaAlgorithm.drawHyperbola(center.x, center.y, a, b);
         animateDrawing(points);
     }
 

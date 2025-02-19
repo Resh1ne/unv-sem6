@@ -18,6 +18,8 @@ public class EditorPanel extends JPanel {
     private final List<Point> currentCircle = new ArrayList<>();
     private final List<List<Point>> allEllipses = new ArrayList<>();
     private final List<Point> currentEllipse = new ArrayList<>();
+    private final List<List<Point>> allHyperbolas = new ArrayList<>();
+    private final List<Point> currentHyperbola = new ArrayList<>();
 
     private Point startPoint = null;
     private ShapeType shapeType = ShapeType.LINE;
@@ -29,11 +31,15 @@ public class EditorPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (shapeType == ShapeType.ELLIPSE) {
+                if (shapeType == ShapeType.ELLIPSE || shapeType == ShapeType.HYPERBOLA) {
                     if (startPoint == null) {
                         startPoint = e.getPoint();
                     } else {
-                        showEllipseDialog(startPoint);
+                        if (shapeType == ShapeType.ELLIPSE) {
+                            showEllipseDialog(startPoint);
+                        } else {
+                            showHyperbolaDialog(startPoint);
+                        }
                         startPoint = null;
                     }
                 } else {
@@ -70,7 +76,6 @@ public class EditorPanel extends JPanel {
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
 
-
         g2d.setColor(Color.BLACK);
         for (List<Point> circle : allCircles) {
             for (Point p : circle) {
@@ -84,6 +89,14 @@ public class EditorPanel extends JPanel {
                 g2d.fillRect(p.x, p.y, 1, 1);
             }
         }
+
+        g2d.setColor(Color.BLACK);
+        for (List<Point> hyperbola : allHyperbolas) {
+            for (Point p : hyperbola) {
+                g2d.fillRect(p.x, p.y, 1, 1);
+            }
+        }
+
         for (List<Pixel> line : allWuLines) {
             for (Pixel pixel : line) {
                 float brightness = pixel.getBrightness();
@@ -160,6 +173,33 @@ public class EditorPanel extends JPanel {
         currentEllipse.clear();
         currentEllipse.addAll(EllipseAlgorithm.drawEllipseBresenham(center.x, center.y, rx, ry));
         allEllipses.add(new ArrayList<>(currentEllipse));
+        repaint();
+    }
+
+    private void showHyperbolaDialog(Point center) {
+        JTextField aField = new JTextField();
+        JTextField bField = new JTextField();
+        Object[] message = {
+                "Введите параметр a:", aField,
+                "Введите параметр b:", bField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Параметры гиперболы", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int a = Integer.parseInt(aField.getText());
+                int b = Integer.parseInt(bField.getText());
+                drawHyperbola(center, a, b);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Введите корректные числа!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void drawHyperbola(Point center, int a, int b) {
+        currentHyperbola.clear();
+        currentHyperbola.addAll(HyperbolaAlgorithm.drawHyperbola(center.x, center.y, a, b));
+        allHyperbolas.add(new ArrayList<>(currentHyperbola));
         repaint();
     }
 
