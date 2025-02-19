@@ -65,7 +65,6 @@ public class WuAlgorithm {
             plot(pixels, xpxl2, ypxl2 + 1, fpart(yend) * xgap);
         }
 
-        // Основной цикл
         if (steep) {
             for (int x = xpxl1 + 1; x < xpxl2; x++) {
                 plot(pixels, ipart(intery), x, rfpart(intery));

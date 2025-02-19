@@ -10,30 +10,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EditorPanel extends JPanel {
-    private final List<List<Point>> allLines = new ArrayList<>(); // Список всех отрезков (Point)
-    private final List<Point> currentLine = new ArrayList<>(); // Текущий отрезок (Point)
-    private final List<List<Pixel>> allWuLines = new ArrayList<>(); // Список всех отрезков (Pixel)
-    private final List<Pixel> currentWuLine = new ArrayList<>(); // Текущий отрезок (Pixel)
-    private Point startPoint = null; // Начальная точка
-    private ShapeType shapeType = ShapeType.LINE; // Выбранная фигура
-    private AlgorithmType algorithmType = AlgorithmType.DDA; // Выбранный алгоритм
+    private final List<List<Point>> allLines = new ArrayList<>();
+    private final List<Point> currentLine = new ArrayList<>();
+    private final List<List<Pixel>> allWuLines = new ArrayList<>();
+    private final List<Pixel> currentWuLine = new ArrayList<>();
+    private Point startPoint = null;
+    private ShapeType shapeType = ShapeType.LINE;
+    private AlgorithmType algorithmType = AlgorithmType.DDA;
 
     public EditorPanel() {
         setBackground(Color.WHITE);
 
-        // Обработка событий мыши
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (startPoint == null) {
-                    // Если начальная точка не задана, сохраняем её
                     startPoint = e.getPoint();
                 } else {
-                    // Если начальная точка задана, рисуем фигуру
                     Point endPoint = e.getPoint();
                     drawShape(startPoint, endPoint);
-                    startPoint = null; // Сбрасываем начальную точку
-                    repaint(); // Перерисовываем панель
+                    startPoint = null;
+                    repaint();
                 }
             }
         });
@@ -44,7 +41,6 @@ public class EditorPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Рисуем все отрезки (Point)
         for (List<Point> line : allLines) {
             for (int i = 0; i < line.size() - 1; i++) {
                 Point p1 = line.get(i);
@@ -53,13 +49,11 @@ public class EditorPanel extends JPanel {
             }
         }
 
-        // Рисуем текущий отрезок (Point)
         for (int i = 0; i < currentLine.size() - 1; i++) {
             Point p1 = currentLine.get(i);
             Point p2 = currentLine.get(i + 1);
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
-        // Рисуем все отрезки (Pixel)
         for (List<Pixel> line : allWuLines) {
             for (Pixel pixel : line) {
                 float brightness = pixel.getBrightness();
@@ -68,7 +62,6 @@ public class EditorPanel extends JPanel {
             }
         }
 
-        // Рисуем текущий отрезок (Pixel)
         for (Pixel pixel : currentWuLine) {
             float brightness = pixel.getBrightness();
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, brightness));
@@ -77,12 +70,6 @@ public class EditorPanel extends JPanel {
 
     }
 
-    /**
-     * Рисует фигуру в зависимости от выбранного типа и алгоритма.
-     *
-     * @param start Начальная точка.
-     * @param end   Конечная точка.
-     */
     private void drawShape(Point start, Point end) {
         switch (shapeType) {
             case LINE:
@@ -94,20 +81,12 @@ public class EditorPanel extends JPanel {
         }
     }
 
-    /**
-     * Рисует отрезок в зависимости от выбранного алгоритма.
-     *
-     * @param start Начальная точка.
-     * @param end   Конечная точка.
-     */
     private void drawLine(Point start, Point end) {
         if (algorithmType == AlgorithmType.WU) {
-            // Используем Pixel для алгоритма Ву
             currentWuLine.clear();
             currentWuLine.addAll(WuAlgorithm.drawLineWu(start.x, start.y, end.x, end.y));
             allWuLines.add(new ArrayList<>(currentWuLine));
         } else {
-            // Используем Point для остальных алгоритмов
             currentLine.clear();
             switch (algorithmType) {
                 case DDA:
@@ -128,7 +107,6 @@ public class EditorPanel extends JPanel {
         allLines.add(new ArrayList<>(currentLine));
     }
 
-    // Сеттеры для выбора фигуры и алгоритма
     public void setShapeType(ShapeType shapeType) {
         this.shapeType = shapeType;
     }

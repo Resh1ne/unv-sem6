@@ -14,27 +14,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DebugPanel extends JPanel {
-    private final List<Point> debugPoints = new ArrayList<>(); // Для алгоритмов, использующих Point
-    private final List<Pixel> debugPixels = new ArrayList<>(); // Для алгоритма Ву
-    private Point startPoint = null; // Начальная точка
-    private ShapeType shapeType = ShapeType.LINE; // Выбранная фигура
-    private AlgorithmType algorithmType = AlgorithmType.DDA; // Выбранный алгоритм
-    private static final int SCALE = 10; // Размер ячейки сетки
-    private static final int DELAY = 20; // Задержка анимации
+    private final List<Point> debugPoints = new ArrayList<>();
+    private final List<Pixel> debugPixels = new ArrayList<>();
+    private Point startPoint = null;
+    private ShapeType shapeType = ShapeType.LINE;
+    private AlgorithmType algorithmType = AlgorithmType.DDA;
+    private static final int SCALE = 10;
+    private static final int DELAY = 20;
 
     public DebugPanel() {
-        setBackground(Color.BLACK); // Чёрный фон для контраста
+        setBackground(Color.BLACK);
 
-        // Обработка кликов мыши
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (startPoint == null) {
-                    startPoint = snapToGrid(e.getPoint()); // Привязываем к сетке
+                    startPoint = snapToGrid(e.getPoint());
                 } else {
                     Point endPoint = snapToGrid(e.getPoint());
                     drawShape(startPoint, endPoint);
-                    startPoint = null; // Сбрасываем начальную точку
+                    startPoint = null;
                 }
             }
         });
@@ -45,15 +44,13 @@ public class DebugPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
 
-        drawGrid(g2); // Рисуем сетку
+        drawGrid(g2);
 
-        // Рисуем точки (Point) белым цветом
         g2.setColor(Color.WHITE);
         for (Point p : debugPoints) {
             g2.fillRect(p.x * SCALE, p.y * SCALE, SCALE, SCALE);
         }
 
-        // Рисуем пиксели (Pixel) с учётом интенсивности
         for (Pixel pixel : debugPixels) {
             float brightness = pixel.getBrightness();
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, brightness));
@@ -61,9 +58,6 @@ public class DebugPanel extends JPanel {
         }
     }
 
-    /**
-     * Рисует сетку пикселей.
-     */
     private void drawGrid(Graphics2D g2) {
         int width = getWidth();
         int height = getHeight();
@@ -77,16 +71,10 @@ public class DebugPanel extends JPanel {
         }
     }
 
-    /**
-     * Привязывает координаты к ближайшей точке сетки.
-     */
     private Point snapToGrid(Point p) {
         return new Point(p.x / SCALE, p.y / SCALE);
     }
 
-    /**
-     * Рисует фигуру в зависимости от выбора.
-     */
     private void drawShape(Point start, Point end) {
         debugPoints.clear();
         debugPixels.clear();
@@ -102,16 +90,11 @@ public class DebugPanel extends JPanel {
         }
     }
 
-    /**
-     * Рисует линию выбранным алгоритмом.
-     */
     private void drawLine(Point start, Point end) {
         if (algorithmType == AlgorithmType.WU) {
-            // Используем Pixel для алгоритма Ву
             List<Pixel> pixels = WuAlgorithm.drawLineWu(start.x, start.y, end.x, end.y);
             animateDrawing(pixels);
         } else {
-            // Используем Point для остальных алгоритмов
             List<Point> points;
             switch (algorithmType) {
                 case DDA:
@@ -127,9 +110,6 @@ public class DebugPanel extends JPanel {
         }
     }
 
-    /**
-     * Рисует окружность, используя алгоритм Брезенхема.
-     */
     private void drawCircle(Point center, Point edge) {
         int radius = (int) Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
         List<Point> points = CircleAlgorithm.drawCircleBresenham(center.x, center.y, radius);
@@ -137,9 +117,6 @@ public class DebugPanel extends JPanel {
         animateDrawing(points);
     }
 
-    /**
-     * Анимированное добавление точек или пикселей.
-     */
     private void animateDrawing(List<?> elements) {
         new Thread(() -> {
             for (Object element : elements) {
@@ -158,7 +135,6 @@ public class DebugPanel extends JPanel {
         }).start();
     }
 
-    // Сеттеры для выбора фигуры и алгоритма
     public void setShapeType(ShapeType shapeType) {
         this.shapeType = shapeType;
     }

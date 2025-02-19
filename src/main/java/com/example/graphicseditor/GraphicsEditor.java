@@ -11,35 +11,30 @@ public class GraphicsEditor extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        // Создаем главные вкладки
         JTabbedPane mainTabbedPane = new JTabbedPane();
         EditorPanel editorPanel = new EditorPanel();
-        DebugPanel debugPanel = new DebugPanel(); // Независимый DebugPanel
+        DebugPanel debugPanel = new DebugPanel();
 
         mainTabbedPane.addTab("Редактор", editorPanel);
         mainTabbedPane.addTab("Отладка", debugPanel);
 
-        // Добавляем главные вкладки в окно
         add(mainTabbedPane);
 
-        // Панель инструментов
         JToolBar toolBar = new JToolBar();
         JComboBox<ShapeType> shapeComboBox = new JComboBox<>(ShapeType.values());
         JComboBox<AlgorithmType> algorithmComboBox = new JComboBox<>(AlgorithmType.values());
 
-        // Обработка выбора фигуры
         shapeComboBox.addActionListener(e -> {
             ShapeType selectedShape = (ShapeType) shapeComboBox.getSelectedItem();
             editorPanel.setShapeType(selectedShape);
-            debugPanel.setShapeType(selectedShape); // DebugPanel также меняет фигуру
+            debugPanel.setShapeType(selectedShape);
             updateAlgorithmComboBox(algorithmComboBox, selectedShape);
         });
 
-        // Обработка выбора алгоритма
         algorithmComboBox.addActionListener(e -> {
             AlgorithmType selectedAlgorithm = (AlgorithmType) algorithmComboBox.getSelectedItem();
             editorPanel.setAlgorithmType(selectedAlgorithm);
-            debugPanel.setAlgorithmType(selectedAlgorithm); // DebugPanel использует тот же алгоритм
+            debugPanel.setAlgorithmType(selectedAlgorithm);
         });
 
         toolBar.add(new JLabel("Фигура: "));
