@@ -1,10 +1,6 @@
 package com.example.graphicseditor;
 
-import com.example.algorithms.DDAAlgorithm;
-import com.example.algorithms.BresenhamAlgorithm;
-import com.example.algorithms.WuAlgorithm;
-import com.example.algorithms.CircleAlgorithm;
-import com.example.algorithms.Pixel;
+import com.example.algorithms.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,12 +24,21 @@ public class DebugPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (startPoint == null) {
-                    startPoint = snapToGrid(e.getPoint());
+                if (shapeType == ShapeType.ELLIPSE) {
+                    if (startPoint == null) {
+                        startPoint = snapToGrid(e.getPoint());
+                    } else {
+                        showEllipseDialog(startPoint);
+                        startPoint = null;
+                    }
                 } else {
-                    Point endPoint = snapToGrid(e.getPoint());
-                    drawShape(startPoint, endPoint);
-                    startPoint = null;
+                    if (startPoint == null) {
+                        startPoint = snapToGrid(e.getPoint());
+                    } else {
+                        Point endPoint = snapToGrid(e.getPoint());
+                        drawShape(startPoint, endPoint);
+                        startPoint = null;
+                    }
                 }
             }
         });
@@ -114,6 +119,31 @@ public class DebugPanel extends JPanel {
         int radius = (int) Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
         List<Point> points = CircleAlgorithm.drawCircleBresenham(center.x, center.y, radius);
 
+        animateDrawing(points);
+    }
+
+    private void showEllipseDialog(Point center) {
+        JTextField widthField = new JTextField();
+        JTextField heightField = new JTextField();
+        Object[] message = {
+                "Введите ширину (rx):", widthField,
+                "Введите высоту (ry):", heightField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Параметры эллипса", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int rx = Integer.parseInt(widthField.getText());
+                int ry = Integer.parseInt(heightField.getText());
+                drawEllipse(center, rx, ry);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Введите корректные числа!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void drawEllipse(Point center, int rx, int ry) {
+        List<Point> points = EllipseAlgorithm.drawEllipseBresenham(center.x, center.y, rx, ry);
         animateDrawing(points);
     }
 

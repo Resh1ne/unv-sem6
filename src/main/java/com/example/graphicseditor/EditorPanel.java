@@ -16,6 +16,8 @@ public class EditorPanel extends JPanel {
     private final List<Pixel> currentWuLine = new ArrayList<>();
     private final List<List<Point>> allCircles = new ArrayList<>();
     private final List<Point> currentCircle = new ArrayList<>();
+    private final List<List<Point>> allEllipses = new ArrayList<>();
+    private final List<Point> currentEllipse = new ArrayList<>();
 
     private Point startPoint = null;
     private ShapeType shapeType = ShapeType.LINE;
@@ -27,13 +29,22 @@ public class EditorPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (startPoint == null) {
-                    startPoint = e.getPoint();
+                if (shapeType == ShapeType.ELLIPSE) {
+                    if (startPoint == null) {
+                        startPoint = e.getPoint();
+                    } else {
+                        showEllipseDialog(startPoint);
+                        startPoint = null;
+                    }
                 } else {
-                    Point endPoint = e.getPoint();
-                    drawShape(startPoint, endPoint);
-                    startPoint = null;
-                    repaint();
+                    if (startPoint == null) {
+                        startPoint = e.getPoint();
+                    } else {
+                        Point endPoint = e.getPoint();
+                        drawShape(startPoint, endPoint);
+                        startPoint = null;
+                        repaint();
+                    }
                 }
             }
         });
@@ -59,6 +70,20 @@ public class EditorPanel extends JPanel {
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
 
+
+        g2d.setColor(Color.BLACK);
+        for (List<Point> circle : allCircles) {
+            for (Point p : circle) {
+                g2d.fillRect(p.x, p.y, 1, 1);
+            }
+        }
+
+        g2d.setColor(Color.BLACK);
+        for (List<Point> ellipse : allEllipses) {
+            for (Point p : ellipse) {
+                g2d.fillRect(p.x, p.y, 1, 1);
+            }
+        }
         for (List<Pixel> line : allWuLines) {
             for (Pixel pixel : line) {
                 float brightness = pixel.getBrightness();
@@ -71,13 +96,6 @@ public class EditorPanel extends JPanel {
             float brightness = pixel.getBrightness();
             g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, brightness));
             g2d.fillRect(pixel.getX(), pixel.getY(), 1, 1);
-        }
-
-        g2d.setColor(Color.BLACK);
-        for (List<Point> circle : allCircles) {
-            for (Point p : circle) {
-                g2d.fillRect(p.x, p.y, 1, 1);
-            }
         }
     }
 
@@ -116,6 +134,33 @@ public class EditorPanel extends JPanel {
         int radius = (int) Math.sqrt(Math.pow(edge.x - center.x, 2) + Math.pow(edge.y - center.y, 2));
         currentCircle.addAll(CircleAlgorithm.drawCircleBresenham(center.x, center.y, radius));
         allCircles.add(new ArrayList<>(currentCircle));
+    }
+
+    private void showEllipseDialog(Point center) {
+        JTextField widthField = new JTextField();
+        JTextField heightField = new JTextField();
+        Object[] message = {
+                "Введите ширину (rx):", widthField,
+                "Введите высоту (ry):", heightField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Параметры эллипса", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int rx = Integer.parseInt(widthField.getText());
+                int ry = Integer.parseInt(heightField.getText());
+                drawEllipse(center, rx, ry);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Введите корректные числа!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void drawEllipse(Point center, int rx, int ry) {
+        currentEllipse.clear();
+        currentEllipse.addAll(EllipseAlgorithm.drawEllipseBresenham(center.x, center.y, rx, ry));
+        allEllipses.add(new ArrayList<>(currentEllipse));
+        repaint();
     }
 
     public void setShapeType(ShapeType shapeType) {
