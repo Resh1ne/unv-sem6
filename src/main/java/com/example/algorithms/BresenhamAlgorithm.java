@@ -5,16 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BresenhamAlgorithm {
-
-    /**
-     * Алгоритм Брезенхема для построения отрезка.
-     *
-     * @param x1 Начальная координата X.
-     * @param y1 Начальная координата Y.
-     * @param x2 Конечная координата X.
-     * @param y2 Конечная координата Y.
-     * @return Список точек, составляющих отрезок.
-     */
     public static List<Point> drawLineBresenham(int x1, int y1, int x2, int y2) {
         List<Point> points = new ArrayList<>();
 

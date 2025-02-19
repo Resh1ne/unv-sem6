@@ -4,22 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WuAlgorithm {
-
-    /**
-     * Алгоритм Ву для построения сглаженного отрезка.
-     *
-     * @param x0 Начальная координата X.
-     * @param y0 Начальная координата Y.
-     * @param x1 Конечная координата X.
-     * @param y1 Конечная координата Y.
-     * @return Список пикселей, составляющих отрезок.
-     */
     public static List<Pixel> drawLineWu(int x0, int y0, int x1, int y1) {
         List<Pixel> pixels = new ArrayList<>();
 
         boolean steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
         if (steep) {
-            // Если отрезок крутой, меняем местами x и y
             int temp = x0;
             x0 = y0;
             y0 = temp;
@@ -29,10 +18,8 @@ public class WuAlgorithm {
             y1 = temp;
         }
 
-        // Убедимся, что линия рисуется от первой точки к последней
         boolean reverse = x0 > x1;
         if (reverse) {
-            // Меняем местами начальную и конечную точки
             int temp = x0;
             x0 = x1;
             x1 = temp;
@@ -93,7 +80,6 @@ public class WuAlgorithm {
             }
         }
 
-        // Если точки были переставлены, разворачиваем список
         if (reverse) {
             reverseList(pixels);
         }
@@ -101,53 +87,24 @@ public class WuAlgorithm {
         return pixels;
     }
 
-    /**
-     * Добавляет пиксель в список с учётом интенсивности.
-     *
-     * @param pixels     Список пикселей.
-     * @param x          Координата X.
-     * @param y          Координата Y.
-     * @param brightness Интенсивность пикселя (от 0 до 1).
-     */
+
     private static void plot(List<Pixel> pixels, int x, int y, float brightness) {
         pixels.add(new Pixel(x, y, brightness));
     }
 
-    /**
-     * Возвращает целую часть числа.
-     *
-     * @param x Число.
-     * @return Целая часть числа.
-     */
     private static int ipart(float x) {
         return (int) x;
     }
 
-    /**
-     * Возвращает дробную часть числа.
-     *
-     * @param x Число.
-     * @return Дробная часть числа.
-     */
     private static float fpart(float x) {
         return x - ipart(x);
     }
 
-    /**
-     * Возвращает 1 минус дробная часть числа.
-     *
-     * @param x Число.
-     * @return 1 минус дробная часть числа.
-     */
     private static float rfpart(float x) {
         return 1 - fpart(x);
     }
 
-    /**
-     * Разворачивает список пикселей.
-     *
-     * @param pixels Список пикселей.
-     */
+
     private static void reverseList(List<Pixel> pixels) {
         int i = 0, j = pixels.size() - 1;
         while (i < j) {
