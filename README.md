@@ -5,238 +5,214 @@
 ### Алгоритм для окружности
 Алгоритм **Брезенхэма** для окружности основан на построении пикселей по восьмисимметрии. Вместо вычисления уравнения окружности, он использует целочисленные вычисления и пошаговое принятие решений.
 ### Алгоритм для элипса
-Алгоритм **Брезенхэма** для эллипса — это целочисленный алгоритм растеризации эллипса. Он использует **инкрементальный метод** и основан на уравнении эллипса:  
-
-\[
-\frac{x^2}{rx^2} + \frac{y^2}{ry^2} = 1
-\]
-
-Где:  
-- \( (xc, yc) \) — координаты центра эллипса.  
-- \( rx \) — радиус эллипса по оси X.  
-- \( ry \) — радиус эллипса по оси Y.  
-
-Так как эллипс симметричен относительно обеих осей, достаточно вычислить точки только в одной четверти, а затем отразить их по симметрии.
+Алгоритм **Брезенхэма** для эллипса — это целочисленный алгоритм растеризации эллипса. Он использует **инкрементальный метод** и основан на уравнении эллипса. Так как эллипс симметричен относительно обеих осей, достаточно вычислить точки только в одной четверти, а затем отразить их по симметрии.
 ### Алгоритм для гиперболы
 Этот алгоритм реализует метод **Брезенхема** для рисования гиперболы. Он основан на пошаговом приближении гиперболы за счет целочисленных вычислений, что делает его быстрым и эффективным.
-#### Основные параметры гиперболы 
-Гипербола задается уравнением:  
-
-\[
-\frac{x^2}{a^2} - \frac{y^2}{b^2} = 1
-\]
-
-Где:  
-- \( a \) — полуось вдоль оси **X**,  
-- \( b \) — полуось вдоль оси **Y**,  
-- \( (xc, yc) \) — центр гиперболы,  
-- \( a^2, b^2 \) — квадраты полуосей. 
 ### Алгоритм для параболы
 Этот алгоритм реализует **метод Брезенхема** для отрисовки **параболы**. Он использует дискретные (целочисленные) вычисления, что делает его быстрым и эффективным для растровой графики.
-#### Основные параметры параболы 
-Парабола обычно задается уравнением вида:  
-
-\[
-y = ax^2
-\]
-
-Где:  
-- \( (x_0, y_0) \) — вершина параболы,  
-- \( a \) — коэффициент, определяющий форму и направление ветвей,  
-- Если \( a > 0 \) — ветви направлены **вверх**,  
-- Если \( a < 0 \) — ветви направлены **вниз**.
-
 ## Интерфейс
 ![image](https://github.com/user-attachments/assets/57c62740-7d48-491c-84de-790e2cd63263)
 
 ![image](https://github.com/user-attachments/assets/51156386-b6fd-44a3-b794-e85cf05d5de7)
 
 ## Реализация
-### Цифровой Дифференциальный Анализатор
+### Алгоритм окружности
 ```
-package com.example.algorithms;
+public class CircleAlgorithm {
+    public static List<Point> drawCircleBresenham(int xc, int yc, int r) {
+        List<Point> points = new ArrayList<>();
+        int x = 0, y = r;
+        int d = 3 - 2 * r;
+        addCirclePoints(points, xc, yc, x, y);
 
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
+        while (y >= x) {
+            x++;
+            if (d > 0) {
+                y--;
+                d = d + 4 * (x - y) + 10;
+            } else {
+                d = d + 4 * x + 6;
+            }
+            addCirclePoints(points, xc, yc, x, y);
+        }
+        return points;
+    }
 
-public class DDAAlgorithm {
-    public static List<Point> drawLineDDA(int x1, int y1, int x2, int y2) {
+    private static void addCirclePoints(List<Point> points, int xc, int yc, int x, int y) {
+        points.add(new Point(xc + x, yc + y));
+        points.add(new Point(xc - x, yc + y));
+        points.add(new Point(xc + x, yc - y));
+        points.add(new Point(xc - x, yc - y));
+        points.add(new Point(xc + y, yc + x));
+        points.add(new Point(xc - y, yc + x));
+        points.add(new Point(xc + y, yc - x));
+        points.add(new Point(xc - y, yc - x));
+    }
+}
+```
+### Алгоритм элипса
+```
+public class EllipseAlgorithm {
+    public static List<Point> drawEllipseBresenham(int xc, int yc, int rx, int ry) {
         List<Point> points = new ArrayList<>();
 
-        int dx = x2 - x1;
-        int dy = y2 - y1;
-        int steps = Math.max(Math.abs(dx), Math.abs(dy));
+        int x = 0, y = ry;
+        int rxSq = rx * rx;
+        int rySq = ry * ry;
+        int twoRxSq = 2 * rxSq;
+        int twoRySq = 2 * rySq;
+        int p;
+        int px = 0;
+        int py = twoRxSq * y;
 
-        float xIncrement = (float) dx / steps;
-        float yIncrement = (float) dy / steps;
+        // Первая область
+        p = (int) (rySq - (rxSq * ry) + (0.25 * rxSq));
+        while (px < py) {
+            points.add(new Point(xc + x, yc + y));
+            points.add(new Point(xc - x, yc + y));
+            points.add(new Point(xc + x, yc - y));
+            points.add(new Point(xc - x, yc - y));
 
-        float x = x1;
-        float y = y1;
-
-        points.add(new Point(Math.round(x), Math.round(y)));
-
-        for (int i = 0; i < steps; i++) {
-            x += xIncrement;
-            y += yIncrement;
-            points.add(new Point(Math.round(x), Math.round(y)));
+            x++;
+            px += twoRySq;
+            if (p < 0) {
+                p += rySq + px;
+            } else {
+                y--;
+                py -= twoRxSq;
+                p += rySq + px - py;
+            }
         }
 
-        points.add(new Point(x2, y2));
+        // Вторая область
+        p = (int) (rySq * (x + 0.5) * (x + 0.5) + rxSq * (y - 1) * (y - 1) - rxSq * rySq);
+        while (y >= 0) {
+            points.add(new Point(xc + x, yc + y));
+            points.add(new Point(xc - x, yc + y));
+            points.add(new Point(xc + x, yc - y));
+            points.add(new Point(xc - x, yc - y));
+
+            y--;
+            py -= twoRxSq;
+            if (p > 0) {
+                p += rxSq - py;
+            } else {
+                x++;
+                px += twoRySq;
+                p += rxSq - py + px;
+            }
+        }
 
         return points;
     }
 }
 ```
-### Алгоритм Брезенхема
+### Алгоритм гиперболы
 ```
-package com.example.algorithms;
-
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.List;
-
-public class BresenhamAlgorithm {
-    public static List<Point> drawLineBresenham(int x1, int y1, int x2, int y2) {
+public class HyperbolaAlgorithm {
+    public static List<Point> drawHyperbola(int xc, int yc, int a, int b) {
         List<Point> points = new ArrayList<>();
 
-        int dx = Math.abs(x2 - x1);
-        int dy = Math.abs(y2 - y1);
-        int sx = x1 < x2 ? 1 : -1;
-        int sy = y1 < y2 ? 1 : -1;
-        int err = dx - dy;
+        int x = a, y = 0;
+        int a2 = a * a, b2 = b * b;
+        int fx = 2 * b2 * x, fy = 2 * a2 * y;
+        int p = b2 - a2 * b + (a2 / 4);
 
-        while (true) {
-            points.add(new Point(x1, y1));
-            if (x1 == x2 && y1 == y2) break;
-            int e2 = 2 * err;
-            if (e2 > -dy) {
-                err -= dy;
-                x1 += sx;
+        int limitX = 2 * a; // Ограничение на X для выхода из цикла
+        int maxPoints = 10000;
+
+        while (fx > fy && points.size() < maxPoints) {
+            addSymmetricPoints(points, xc, yc, x, y);
+            y++;
+            fy += 2 * a2;
+
+            if (p < 0) {
+                p += b2 + fy;
+            } else {
+                x++;
+                fx += 2 * b2;
+                p += b2 + fy - fx;
             }
-            if (e2 < dx) {
-                err += dx;
-                y1 += sy;
+
+            if (x > limitX) break;
+        }
+
+        p = (int) (b2 * (x + 0.5) * (x + 0.5) + a2 * (y + 1) * (y + 1) - a2 * b2);
+        while (x <= limitX && points.size() < maxPoints) {
+            addSymmetricPoints(points, xc, yc, x, y);
+            x++;
+            fx += 2 * b2;
+
+            if (p >= 0) {
+                p += a2 - fx;
+            } else {
+                y++;
+                fy += 2 * a2;
+                p += a2 - fx + fy;
             }
+
+            if (y > limitX) break;
         }
 
         return points;
     }
+
+    private static void addSymmetricPoints(List<Point> points, int xc, int yc, int x, int y) {
+        if (points.size() >= 10000) return;
+
+        points.add(new Point(xc + x, yc + y));
+        points.add(new Point(xc - x, yc + y));
+        points.add(new Point(xc + x, yc - y));
+        points.add(new Point(xc - x, yc - y));
+    }
 }
 ```
-### Алгоритм Ву
+### Алгоритм параболы
 ```
-package com.example.algorithms;
+public class ParabolaAlgorithm {
 
-import java.util.ArrayList;
-import java.util.List;
+    public static List<Point> drawParabola(int x0, int y0, int a) {
+        List<Point> points = new ArrayList<>();
+        int signA = Integer.signum(a);
+        a = Math.abs(a);
 
-public class WuAlgorithm {
-    public static List<Pixel> drawLineWu(int x0, int y0, int x1, int y1) {
-        List<Pixel> pixels = new ArrayList<>();
+        int x = 0;
+        int y = 0;
+        int p = 1 - 2 * a;
 
-        boolean steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
-        if (steep) {
-            int temp = x0;
-            x0 = y0;
-            y0 = temp;
+        while (y <= 500) {
+            points.add(new Point(x0 + x * signA, y0 + y));
+            points.add(new Point(x0 + x * signA, y0 - y));
 
-            temp = x1;
-            x1 = y1;
-            y1 = temp;
-        }
-
-        boolean reverse = x0 > x1;
-        if (reverse) {
-            int temp = x0;
-            x0 = x1;
-            x1 = temp;
-
-            temp = y0;
-            y0 = y1;
-            y1 = temp;
-        }
-
-        float dx = x1 - x0;
-        float dy = y1 - y0;
-        float gradient = dx == 0 ? 1 : dy / dx;
-
-        float xend = Math.round(x0);
-        float yend = y0 + gradient * (xend - x0);
-        float xgap = rfpart(x0 + 0.5f);
-        int xpxl1 = (int) xend;
-        int ypxl1 = ipart(yend);
-
-        if (steep) {
-            plot(pixels, ypxl1, xpxl1, rfpart(yend) * xgap);
-            plot(pixels, ypxl1 + 1, xpxl1, fpart(yend) * xgap);
-        } else {
-            plot(pixels, xpxl1, ypxl1, rfpart(yend) * xgap);
-            plot(pixels, xpxl1, ypxl1 + 1, fpart(yend) * xgap);
-        }
-
-        float intery = yend + gradient;
-
-        xend = Math.round(x1);
-        yend = y1 + gradient * (xend - x1);
-        xgap = fpart(x1 + 0.5f);
-        int xpxl2 = (int) xend;
-        int ypxl2 = ipart(yend);
-
-        if (steep) {
-            plot(pixels, ypxl2, xpxl2, rfpart(yend) * xgap);
-            plot(pixels, ypxl2 + 1, xpxl2, fpart(yend) * xgap);
-        } else {
-            plot(pixels, xpxl2, ypxl2, rfpart(yend) * xgap);
-            plot(pixels, xpxl2, ypxl2 + 1, fpart(yend) * xgap);
-        }
-
-        if (steep) {
-            for (int x = xpxl1 + 1; x < xpxl2; x++) {
-                plot(pixels, ipart(intery), x, rfpart(intery));
-                plot(pixels, ipart(intery) + 1, x, fpart(intery));
-                intery += gradient;
+            if (p < 0) {
+                p += 2 * y + 3;
+            } else {
+                x++;
+                p += 2 * y + 3 - 4 * a;
             }
-        } else {
-            for (int x = xpxl1 + 1; x < xpxl2; x++) {
-                plot(pixels, x, ipart(intery), rfpart(intery));
-                plot(pixels, x, ipart(intery) + 1, fpart(intery));
-                intery += gradient;
+            y++;
+        }
+
+        if (signA < 0) {
+            x = 0;
+            y = 0;
+            p = 1 - 2 * a;
+
+            while (y <= 1000) {
+                points.add(new Point(x0 - x, y0 + y));
+                points.add(new Point(x0 - x, y0 - y));
+
+                if (p < 0) {
+                    p += 2 * y + 3;
+                } else {
+                    x++;
+                    p += 2 * y + 3 - 4 * a;
+                }
+                y++;
             }
         }
 
-        if (reverse) {
-            reverseList(pixels);
-        }
-
-        return pixels;
-    }
-
-    private static void plot(List<Pixel> pixels, int x, int y, float brightness) {
-        pixels.add(new Pixel(x, y, brightness));
-    }
-
-    private static int ipart(float x) {
-        return (int) x;
-    }
-
-    private static float fpart(float x) {
-        return x - ipart(x);
-    }
-
-    private static float rfpart(float x) {
-        return 1 - fpart(x);
-    }
-
-    private static void reverseList(List<Pixel> pixels) {
-        int i = 0, j = pixels.size() - 1;
-        while (i < j) {
-            Pixel temp = pixels.get(i);
-            pixels.set(i, pixels.get(j));
-            pixels.set(j, temp);
-            i++;
-            j--;
-        }
+        return points;
     }
 }
 ```
@@ -245,4 +221,4 @@ public class WuAlgorithm {
 - JavaFX
 - Maven
 ## Вывод
-В результате реализации графического редактора, использующего алгоритмы построения отрезков (ЦДА, Брезенхема и Ву), была создана система, обеспечивающая интерактивное рисование отрезков с возможностью отображения пошагового процесса.
+В результате разработки графического редактора, были добавлены возможности отрисовки таких объектов как: **окружность**, **элипс**, **парабола** и **гипербола**.
