@@ -20,6 +20,8 @@ public class EditorPanel extends JPanel {
     private final List<Point> currentEllipse = new ArrayList<>();
     private final List<List<Point>> allHyperbolas = new ArrayList<>();
     private final List<Point> currentHyperbola = new ArrayList<>();
+    private final List<List<Point>> allParabolas = new ArrayList<>(); // Новый список для парабол
+    private final List<Point> currentParabola = new ArrayList<>(); // Текущая парабола
 
     private Point startPoint = null;
     private ShapeType shapeType = ShapeType.LINE;
@@ -31,14 +33,16 @@ public class EditorPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (shapeType == ShapeType.ELLIPSE || shapeType == ShapeType.HYPERBOLA) {
+                if (shapeType == ShapeType.ELLIPSE || shapeType == ShapeType.HYPERBOLA || shapeType == ShapeType.PARABOLA) {
                     if (startPoint == null) {
                         startPoint = e.getPoint();
                     } else {
                         if (shapeType == ShapeType.ELLIPSE) {
                             showEllipseDialog(startPoint);
-                        } else {
+                        } else if (shapeType == ShapeType.HYPERBOLA) {
                             showHyperbolaDialog(startPoint);
+                        } else if (shapeType == ShapeType.PARABOLA) {
+                            showParabolaDialog(startPoint);
                         }
                         startPoint = null;
                     }
@@ -93,6 +97,13 @@ public class EditorPanel extends JPanel {
         g2d.setColor(Color.BLACK);
         for (List<Point> hyperbola : allHyperbolas) {
             for (Point p : hyperbola) {
+                g2d.fillRect(p.x, p.y, 1, 1);
+            }
+        }
+
+        g2d.setColor(Color.BLACK);
+        for (List<Point> parabola : allParabolas) { // Отрисовка парабол
+            for (Point p : parabola) {
                 g2d.fillRect(p.x, p.y, 1, 1);
             }
         }
@@ -200,6 +211,30 @@ public class EditorPanel extends JPanel {
         currentHyperbola.clear();
         currentHyperbola.addAll(HyperbolaAlgorithm.drawHyperbola(center.x, center.y, a, b));
         allHyperbolas.add(new ArrayList<>(currentHyperbola));
+        repaint();
+    }
+
+    private void showParabolaDialog(Point center) {
+        JTextField aField = new JTextField();
+        Object[] message = {
+                "Введите параметр a:", aField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Параметры параболы", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int a = Integer.parseInt(aField.getText());
+                drawParabola(center, a);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Введите корректное число!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void drawParabola(Point center, int a) {
+        currentParabola.clear();
+        currentParabola.addAll(ParabolaAlgorithm.drawParabola(center.x, center.y, a));
+        allParabolas.add(new ArrayList<>(currentParabola));
         repaint();
     }
 

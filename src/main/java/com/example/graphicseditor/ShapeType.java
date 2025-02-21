@@ -4,5 +4,6 @@ public enum ShapeType {
     LINE,
     CIRCLE,
     ELLIPSE,
-    HYPERBOLA
+    HYPERBOLA,
+    PARABOLA
 }

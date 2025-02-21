@@ -24,14 +24,16 @@ public class DebugPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (shapeType == ShapeType.ELLIPSE || shapeType == ShapeType.HYPERBOLA) {
+                if (shapeType == ShapeType.ELLIPSE || shapeType == ShapeType.HYPERBOLA || shapeType == ShapeType.PARABOLA) {
                     if (startPoint == null) {
                         startPoint = snapToGrid(e.getPoint());
                     } else {
                         if (shapeType == ShapeType.ELLIPSE) {
                             showEllipseDialog(startPoint);
-                        } else {
+                        } else if (shapeType == ShapeType.HYPERBOLA) {
                             showHyperbolaDialog(startPoint);
+                        } else if (shapeType == ShapeType.PARABOLA) {
+                            showParabolaDialog(startPoint);
                         }
                         startPoint = null;
                     }
@@ -150,6 +152,7 @@ public class DebugPanel extends JPanel {
         debugPoints.clear();
         debugPixels.clear();
         repaint();
+
         List<Point> points = EllipseAlgorithm.drawEllipseBresenham(center.x, center.y, rx, ry);
         animateDrawing(points);
     }
@@ -178,7 +181,34 @@ public class DebugPanel extends JPanel {
         debugPoints.clear();
         debugPixels.clear();
         repaint();
+
         List<Point> points = HyperbolaAlgorithm.drawHyperbola(center.x, center.y, a, b);
+        animateDrawing(points);
+    }
+
+    private void showParabolaDialog(Point center) {
+        JTextField aField = new JTextField();
+        Object[] message = {
+                "Введите параметр a:", aField
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "Параметры параболы", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            try {
+                int a = Integer.parseInt(aField.getText());
+                drawParabola(center, a);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Введите корректное число!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void drawParabola(Point center, int a) {
+        debugPoints.clear();
+        debugPixels.clear();
+        repaint();
+
+        List<Point> points = ParabolaAlgorithm.drawParabola(center.x, center.y, a);
         animateDrawing(points);
     }
 
