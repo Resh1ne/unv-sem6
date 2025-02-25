@@ -1,217 +1,80 @@
-# Лабораторная работа №2
+# Лабораторная работа №3
 ## Цель
-Разработать элементарный графический редактор, реализующий построение линий второго порядка. Вызов способа генерации линии второго порядка задается из пункта меню и доступно через панель инструментов «Линии 2-го порядка». В редакторе кроме режима генерации линий второго порядка в пользовательском окне должен быть предусмотрен отладочный режим, где отображается пошаговое решение на дискретной сетке.
+Разработать элементарный графический редактор, реализующий построение параметрических кривых, используя форму Эрмита, форму Безье и B-сплайн.
 ## Описание алгоритмов
-### Алгоритм для окружности
-Алгоритм **Брезенхэма** для окружности основан на построении пикселей по восьмисимметрии. Вместо вычисления уравнения окружности, он использует целочисленные вычисления и пошаговое принятие решений.
-### Алгоритм для элипса
-Алгоритм **Брезенхэма** для эллипса — это целочисленный алгоритм растеризации эллипса. Он использует **инкрементальный метод** и основан на уравнении эллипса. Так как эллипс симметричен относительно обеих осей, достаточно вычислить точки только в одной четверти, а затем отразить их по симметрии.
-### Алгоритм для гиперболы
-Этот алгоритм реализует метод **Брезенхема** для рисования гиперболы. Он основан на пошаговом приближении гиперболы за счет целочисленных вычислений, что делает его быстрым и эффективным.
-### Алгоритм для параболы
-Этот алгоритм реализует **метод Брезенхема** для отрисовки **параболы**. Он использует дискретные (целочисленные) вычисления, что делает его быстрым и эффективным для растровой графики.
+### Кривая Эрмита 
+Метод построения кривых, использующий начальные и конечные точки, а также касательные в этих точках.
+### Кривая Безье 
+Параметрическая кривая, определяемая опорными точками, с использованием полиномиальных функций.
+### B-сплайн
+Гибкий метод построения кривых, который позволяет более плавно контролировать форму кривой за счет весовых коэффициентов.
 ## Интерфейс
-![image](https://github.com/user-attachments/assets/57c62740-7d48-491c-84de-790e2cd63263)
+![image](https://github.com/user-attachments/assets/c48c6a69-0677-4879-b4da-b52841d0a78f)
 
-![image](https://github.com/user-attachments/assets/51156386-b6fd-44a3-b794-e85cf05d5de7)
 
 ## Реализация
-### Алгоритм окружности
+### Кривая Эрмита
 ```
-public class CircleAlgorithm {
-    public static List<Point> drawCircleBresenham(int xc, int yc, int r) {
+public class HermiteCurve {
+    public static List<Point> drawHermiteCurve(Point p0, Point p1, Point t0, Point t1, int steps) {
         List<Point> points = new ArrayList<>();
-        int x = 0, y = r;
-        int d = 3 - 2 * r;
-        addCirclePoints(points, xc, yc, x, y);
+        for (int i = 0; i <= steps; i++) {
+            double t = (double) i / steps;
+            double h1 = 2 * Math.pow(t, 3) - 3 * Math.pow(t, 2) + 1;
+            double h2 = -2 * Math.pow(t, 3) + 3 * Math.pow(t, 2);
+            double h3 = Math.pow(t, 3) - 2 * Math.pow(t, 2) + t;
+            double h4 = Math.pow(t, 3) - Math.pow(t, 2);
 
-        while (y >= x) {
-            x++;
-            if (d > 0) {
-                y--;
-                d = d + 4 * (x - y) + 10;
-            } else {
-                d = d + 4 * x + 6;
-            }
-            addCirclePoints(points, xc, yc, x, y);
+            int x = (int) (h1 * p0.x + h2 * p1.x + h3 * t0.x + h4 * t1.x);
+            int y = (int) (h1 * p0.y + h2 * p1.y + h3 * t0.y + h4 * t1.y);
+            points.add(new Point(x, y));
         }
-        return points;
-    }
-
-    private static void addCirclePoints(List<Point> points, int xc, int yc, int x, int y) {
-        points.add(new Point(xc + x, yc + y));
-        points.add(new Point(xc - x, yc + y));
-        points.add(new Point(xc + x, yc - y));
-        points.add(new Point(xc - x, yc - y));
-        points.add(new Point(xc + y, yc + x));
-        points.add(new Point(xc - y, yc + x));
-        points.add(new Point(xc + y, yc - x));
-        points.add(new Point(xc - y, yc - x));
-    }
-}
-```
-### Алгоритм элипса
-```
-public class EllipseAlgorithm {
-    public static List<Point> drawEllipseBresenham(int xc, int yc, int rx, int ry) {
-        List<Point> points = new ArrayList<>();
-
-        int x = 0, y = ry;
-        int rxSq = rx * rx;
-        int rySq = ry * ry;
-        int twoRxSq = 2 * rxSq;
-        int twoRySq = 2 * rySq;
-        int p;
-        int px = 0;
-        int py = twoRxSq * y;
-
-        // Первая область
-        p = (int) (rySq - (rxSq * ry) + (0.25 * rxSq));
-        while (px < py) {
-            points.add(new Point(xc + x, yc + y));
-            points.add(new Point(xc - x, yc + y));
-            points.add(new Point(xc + x, yc - y));
-            points.add(new Point(xc - x, yc - y));
-
-            x++;
-            px += twoRySq;
-            if (p < 0) {
-                p += rySq + px;
-            } else {
-                y--;
-                py -= twoRxSq;
-                p += rySq + px - py;
-            }
-        }
-
-        // Вторая область
-        p = (int) (rySq * (x + 0.5) * (x + 0.5) + rxSq * (y - 1) * (y - 1) - rxSq * rySq);
-        while (y >= 0) {
-            points.add(new Point(xc + x, yc + y));
-            points.add(new Point(xc - x, yc + y));
-            points.add(new Point(xc + x, yc - y));
-            points.add(new Point(xc - x, yc - y));
-
-            y--;
-            py -= twoRxSq;
-            if (p > 0) {
-                p += rxSq - py;
-            } else {
-                x++;
-                px += twoRySq;
-                p += rxSq - py + px;
-            }
-        }
-
         return points;
     }
 }
 ```
-### Алгоритм гиперболы
+### Кривая Безье
 ```
-public class HyperbolaAlgorithm {
-    public static List<Point> drawHyperbola(int xc, int yc, int a, int b) {
+public class BezierCurve {
+    public static List<Point> drawBezierCurve(Point p0, Point p1, Point p2, Point p3, int steps) {
         List<Point> points = new ArrayList<>();
+        for (int i = 0; i <= steps; i++) {
+            double t = (double) i / steps;
+            double u = 1 - t;
+            double tt = t * t;
+            double uu = u * u;
+            double uuu = uu * u;
+            double ttt = tt * t;
 
-        int x = a, y = 0;
-        int a2 = a * a, b2 = b * b;
-        int fx = 2 * b2 * x, fy = 2 * a2 * y;
-        int p = b2 - a2 * b + (a2 / 4);
-
-        int limitX = 2 * a; // Ограничение на X для выхода из цикла
-        int maxPoints = 10000;
-
-        while (fx > fy && points.size() < maxPoints) {
-            addSymmetricPoints(points, xc, yc, x, y);
-            y++;
-            fy += 2 * a2;
-
-            if (p < 0) {
-                p += b2 + fy;
-            } else {
-                x++;
-                fx += 2 * b2;
-                p += b2 + fy - fx;
-            }
-
-            if (x > limitX) break;
+            int x = (int) (uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x);
+            int y = (int) (uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y);
+            points.add(new Point(x, y));
         }
-
-        p = (int) (b2 * (x + 0.5) * (x + 0.5) + a2 * (y + 1) * (y + 1) - a2 * b2);
-        while (x <= limitX && points.size() < maxPoints) {
-            addSymmetricPoints(points, xc, yc, x, y);
-            x++;
-            fx += 2 * b2;
-
-            if (p >= 0) {
-                p += a2 - fx;
-            } else {
-                y++;
-                fy += 2 * a2;
-                p += a2 - fx + fy;
-            }
-
-            if (y > limitX) break;
-        }
-
         return points;
-    }
-
-    private static void addSymmetricPoints(List<Point> points, int xc, int yc, int x, int y) {
-        if (points.size() >= 10000) return;
-
-        points.add(new Point(xc + x, yc + y));
-        points.add(new Point(xc - x, yc + y));
-        points.add(new Point(xc + x, yc - y));
-        points.add(new Point(xc - x, yc - y));
     }
 }
 ```
-### Алгоритм параболы
+### B-сплайн
 ```
-public class ParabolaAlgorithm {
-
-    public static List<Point> drawParabola(int x0, int y0, int a) {
+public class BSpline {
+    public static List<Point> drawBSpline(List<Point> controlPoints, int steps) {
         List<Point> points = new ArrayList<>();
-        int signA = Integer.signum(a);
-        a = Math.abs(a);
+        int n = controlPoints.size() - 1;
+        for (int i = 0; i <= n - 3; i++) {
+            for (int j = 0; j <= steps; j++) {
+                double t = (double) j / steps;
+                double b0 = (1 - t) * (1 - t) * (1 - t) / 6;
+                double b1 = (3 * t * t * t - 6 * t * t + 4) / 6;
+                double b2 = (-3 * t * t * t + 3 * t * t + 3 * t + 1) / 6;
+                double b3 = t * t * t / 6;
 
-        int x = 0;
-        int y = 0;
-        int p = 1 - 2 * a;
-
-        while (y <= 500) {
-            points.add(new Point(x0 + x * signA, y0 + y));
-            points.add(new Point(x0 + x * signA, y0 - y));
-
-            if (p < 0) {
-                p += 2 * y + 3;
-            } else {
-                x++;
-                p += 2 * y + 3 - 4 * a;
-            }
-            y++;
-        }
-
-        if (signA < 0) {
-            x = 0;
-            y = 0;
-            p = 1 - 2 * a;
-
-            while (y <= 1000) {
-                points.add(new Point(x0 - x, y0 + y));
-                points.add(new Point(x0 - x, y0 - y));
-
-                if (p < 0) {
-                    p += 2 * y + 3;
-                } else {
-                    x++;
-                    p += 2 * y + 3 - 4 * a;
-                }
-                y++;
+                int x = (int) (b0 * controlPoints.get(i).x + b1 * controlPoints.get(i + 1).x +
+                        b2 * controlPoints.get(i + 2).x + b3 * controlPoints.get(i + 3).x);
+                int y = (int) (b0 * controlPoints.get(i).y + b1 * controlPoints.get(i + 1).y +
+                        b2 * controlPoints.get(i + 2).y + b3 * controlPoints.get(i + 3).y);
+                points.add(new Point(x, y));
             }
         }
-
         return points;
     }
 }
@@ -221,4 +84,4 @@ public class ParabolaAlgorithm {
 - JavaFX
 - Maven
 ## Вывод
-В результате разработки графического редактора, были добавлены возможности отрисовки таких объектов как: **окружность**, **элипс**, **парабола** и **гипербола**.
+Разработанный графический редактор успешно реализует построение параметрических кривых Эрмита, Безье и B-сплайнов. Добавлена возможность корректировки опорных точек и состыковки сегментов. Реализованы базовые функции матричных вычислений для работы с кривыми.
