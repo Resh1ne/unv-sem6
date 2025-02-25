@@ -5,5 +5,8 @@ public enum ShapeType {
     CIRCLE,
     ELLIPSE,
     HYPERBOLA,
-    PARABOLA
+    PARABOLA,
+    HERMITE,
+    BEZIER,
+    BSPLINE
 }
