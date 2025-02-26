@@ -13,7 +13,7 @@ public class HyperbolaAlgorithm {
         int fx = 2 * b2 * x, fy = 2 * a2 * y;
         int p = b2 - a2 * b + (a2 / 4);
 
-        int limitX = 2 * a; // Ограничение на X для выхода из цикла
+        int limitX = 2 * a;
         int maxPoints = 10000;
 
         while (fx > fy && points.size() < maxPoints) {

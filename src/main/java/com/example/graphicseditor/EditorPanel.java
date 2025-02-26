@@ -20,8 +20,8 @@ public class EditorPanel extends JPanel {
     private final List<Point> currentEllipse = new ArrayList<>();
     private final List<List<Point>> allHyperbolas = new ArrayList<>();
     private final List<Point> currentHyperbola = new ArrayList<>();
-    private final List<List<Point>> allParabolas = new ArrayList<>(); // Новый список для парабол
-    private final List<Point> currentParabola = new ArrayList<>(); // Текущая парабола
+    private final List<List<Point>> allParabolas = new ArrayList<>();
+    private final List<Point> currentParabola = new ArrayList<>();
 
     private Point startPoint = null;
     private ShapeType shapeType = ShapeType.LINE;
@@ -102,7 +102,7 @@ public class EditorPanel extends JPanel {
         }
 
         g2d.setColor(Color.BLACK);
-        for (List<Point> parabola : allParabolas) { // Отрисовка парабол
+        for (List<Point> parabola : allParabolas) {
             for (Point p : parabola) {
                 g2d.fillRect(p.x, p.y, 1, 1);
             }

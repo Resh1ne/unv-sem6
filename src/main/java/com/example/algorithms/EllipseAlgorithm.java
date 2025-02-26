@@ -17,7 +17,6 @@ public class EllipseAlgorithm {
         int px = 0;
         int py = twoRxSq * y;
 
-        // Первая область
         p = (int) (rySq - (rxSq * ry) + (0.25 * rxSq));
         while (px < py) {
             points.add(new Point(xc + x, yc + y));
@@ -36,7 +35,6 @@ public class EllipseAlgorithm {
             }
         }
 
-        // Вторая область
         p = (int) (rySq * (x + 0.5) * (x + 0.5) + rxSq * (y - 1) * (y - 1) - rxSq * rySq);
         while (y >= 0) {
             points.add(new Point(xc + x, yc + y));
