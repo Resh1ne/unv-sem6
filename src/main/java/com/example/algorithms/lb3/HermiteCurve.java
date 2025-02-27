@@ -1,4 +1,4 @@
-package com.example.algorithms;
+package com.example.algorithms.lb3;
 
 import java.awt.*;
 import java.util.ArrayList;

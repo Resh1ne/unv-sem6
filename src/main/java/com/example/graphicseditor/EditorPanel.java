@@ -1,16 +1,16 @@
 package com.example.graphicseditor;
 
-import com.example.algorithms.BSpline;
-import com.example.algorithms.BezierCurve;
-import com.example.algorithms.BresenhamAlgorithm;
-import com.example.algorithms.CircleAlgorithm;
-import com.example.algorithms.DDAAlgorithm;
-import com.example.algorithms.EllipseAlgorithm;
-import com.example.algorithms.HermiteCurve;
-import com.example.algorithms.HyperbolaAlgorithm;
-import com.example.algorithms.ParabolaAlgorithm;
-import com.example.algorithms.Pixel;
-import com.example.algorithms.WuAlgorithm;
+import com.example.algorithms.lb3.BSpline;
+import com.example.algorithms.lb3.BezierCurve;
+import com.example.algorithms.lb1.BresenhamAlgorithm;
+import com.example.algorithms.lb2.CircleAlgorithm;
+import com.example.algorithms.lb1.DDAAlgorithm;
+import com.example.algorithms.lb2.EllipseAlgorithm;
+import com.example.algorithms.lb3.HermiteCurve;
+import com.example.algorithms.lb2.HyperbolaAlgorithm;
+import com.example.algorithms.lb2.ParabolaAlgorithm;
+import com.example.algorithms.lb1.Pixel;
+import com.example.algorithms.lb1.WuAlgorithm;
 
 import javax.swing.*;
 import java.awt.*;

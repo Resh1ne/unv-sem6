@@ -1,4 +1,4 @@
-package com.example.algorithms;
+package com.example.algorithms.lb2;
 
 import java.awt.Point;
 import java.util.ArrayList;

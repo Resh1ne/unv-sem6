@@ -1,4 +1,4 @@
-package com.example.algorithms;
+package com.example.algorithms.lb1;
 
 public class Pixel {
     private final int x;
