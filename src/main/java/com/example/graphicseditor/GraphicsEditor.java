@@ -14,9 +14,11 @@ public class GraphicsEditor extends JFrame {
         JTabbedPane mainTabbedPane = new JTabbedPane();
         EditorPanel editorPanel = new EditorPanel();
         DebugPanel debugPanel = new DebugPanel();
+        Editor3DPanel editor3DPanel = new Editor3DPanel();
 
-        mainTabbedPane.addTab("Редактор", editorPanel);
+        mainTabbedPane.addTab("Редактор 2D", editorPanel);
         mainTabbedPane.addTab("Отладка", debugPanel);
+        mainTabbedPane.addTab("Редактор 3D", editor3DPanel);
 
         add(mainTabbedPane);
 
@@ -43,6 +45,12 @@ public class GraphicsEditor extends JFrame {
         toolBar.add(algorithmComboBox);
 
         add(toolBar, BorderLayout.NORTH);
+
+        mainTabbedPane.addChangeListener(e -> {
+            if (mainTabbedPane.getSelectedComponent() == editor3DPanel) {
+                editor3DPanel.requestFocusInWindow();
+            }
+        });
     }
 
     private void updateAlgorithmComboBox(JComboBox<AlgorithmType> algorithmComboBox, ShapeType shapeType) {
