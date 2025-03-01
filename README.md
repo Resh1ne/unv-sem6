@@ -1,81 +1,230 @@
-# Лабораторная работа №3
+# Лабораторная работа №4
 ## Цель
-Разработать элементарный графический редактор, реализующий построение параметрических кривых, используя форму Эрмита, форму Безье и B-сплайн.
-## Описание алгоритмов
-### Кривая Эрмита 
-Метод построения кривых, использующий начальные и конечные точки, а также касательные в этих точках.
-### Кривая Безье 
-Параметрическая кривая, определяемая опорными точками, с использованием полиномиальных функций.
-### B-сплайн
-Гибкий метод построения кривых, который позволяет более плавно контролировать форму кривой за счет весовых коэффициентов.
+Разработать графическую программу, выполняющую следующие геометрические преобразования над трехмерным объектом: перемещение, поворот, скалирование, отображение, перспектива. В программе должно быть предусмотрено считывание координат 3D объекта из текстового файла, обработка клавиатуры и выполнение геометрических преобразований в зависимости от нажатых клавиш. Все преобразования следует производить с использованием матричного аппарата и представления координат в однородных координатах.
+## Основные теоретические сведения
+- Однородные координаты — это система координат, которая позволяет выполнять преобразования, такие как перемещение, поворот и масштабирование, с использованием матриц.
+- Матрицы преобразования — это инструменты, используемые для осуществления различных геометрических изменений объектов в пространстве.
 ## Интерфейс
-![image](https://github.com/user-attachments/assets/c48c6a69-0677-4879-b4da-b52841d0a78f)
-
+![image](https://github.com/user-attachments/assets/2b64e18c-4f8e-4af9-90e2-eec2ac02e97c)
 
 ## Реализация
-### Кривая Эрмита
+### Класс для загрузки объекта
 ```
-public class HermiteCurve {
-    public static List<Point> drawHermiteCurve(Point p0, Point p1, Point t0, Point t1, int steps) {
-        List<Point> points = new ArrayList<>();
-        for (int i = 0; i <= steps; i++) {
-            double t = (double) i / steps;
-            double h1 = 2 * Math.pow(t, 3) - 3 * Math.pow(t, 2) + 1;
-            double h2 = -2 * Math.pow(t, 3) + 3 * Math.pow(t, 2);
-            double h3 = Math.pow(t, 3) - 2 * Math.pow(t, 2) + t;
-            double h4 = Math.pow(t, 3) - Math.pow(t, 2);
+public class ObjectLoader {
+    public static Object3D loadFromFile(String filename) throws IOException {
+        Object3D object = new Object3D();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim(); // Убираем пробелы по краям
+                if (line.isEmpty() || line.startsWith("#")) continue; // Игнорируем пустые строки и комментарии
 
-            int x = (int) (h1 * p0.x + h2 * p1.x + h3 * t0.x + h4 * t1.x);
-            int y = (int) (h1 * p0.y + h2 * p1.y + h3 * t0.y + h4 * t1.y);
-            points.add(new Point(x, y));
-        }
-        return points;
-    }
-}
-```
-### Кривая Безье
-```
-public class BezierCurve {
-    public static List<Point> drawBezierCurve(Point p0, Point p1, Point p2, Point p3, int steps) {
-        List<Point> points = new ArrayList<>();
-        for (int i = 0; i <= steps; i++) {
-            double t = (double) i / steps;
-            double u = 1 - t;
-            double tt = t * t;
-            double uu = u * u;
-            double uuu = uu * u;
-            double ttt = tt * t;
+                if (line.startsWith("v ")) {
+                    String[] parts = line.split("\\s+"); // Разделяем по пробелам
+                    if (parts.length < 4) continue; // Пропускаем строки с недостатком координат
 
-            int x = (int) (uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x);
-            int y = (int) (uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y);
-            points.add(new Point(x, y));
-        }
-        return points;
-    }
-}
-```
-### B-сплайн
-```
-public class BSpline {
-    public static List<Point> drawBSpline(List<Point> controlPoints, int steps) {
-        List<Point> points = new ArrayList<>();
-        int n = controlPoints.size() - 1;
-        for (int i = 0; i <= n - 3; i++) {
-            for (int j = 0; j <= steps; j++) {
-                double t = (double) j / steps;
-                double b0 = (1 - t) * (1 - t) * (1 - t) / 6;
-                double b1 = (3 * t * t * t - 6 * t * t + 4) / 6;
-                double b2 = (-3 * t * t * t + 3 * t * t + 3 * t + 1) / 6;
-                double b3 = t * t * t / 6;
+                    try {
+                        double x = Double.parseDouble(parts[1]);
+                        double y = Double.parseDouble(parts[2]);
+                        double z = Double.parseDouble(parts[3]);
+                        object.addVertex(x, y, z);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Ошибка чтения координат: " + line);
+                    }
+                } else if (line.startsWith("f ")) {
+                    String[] parts = line.split("\\s+"); // Разделяем по пробелам
+                    if (parts.length < 4) continue; // Пропускаем строки с недостатком индексов
 
-                int x = (int) (b0 * controlPoints.get(i).x + b1 * controlPoints.get(i + 1).x +
-                        b2 * controlPoints.get(i + 2).x + b3 * controlPoints.get(i + 3).x);
-                int y = (int) (b0 * controlPoints.get(i).y + b1 * controlPoints.get(i + 1).y +
-                        b2 * controlPoints.get(i + 2).y + b3 * controlPoints.get(i + 3).y);
-                points.add(new Point(x, y));
+                    try {
+                        int[] vertexIndices = new int[parts.length - 1];
+                        for (int i = 1; i < parts.length; i++) {
+                            vertexIndices[i - 1] = Integer.parseInt(parts[i].split("/")[0]) - 1; // Преобразуем в 0-based индекс
+                        }
+                        object.addFace(vertexIndices);
+                    } catch (NumberFormatException e) {
+                        System.err.println("Ошибка чтения индексов граней: " + line);
+                    }
+                }
             }
         }
-        return points;
+        return object;
+    }
+}
+```
+### Класс для обработки нажатия клавиш
+```
+public class KeyboardHandler extends KeyAdapter {
+    private final Object3D object;
+    private final JPanel panel;
+
+    public KeyboardHandler(Object3D object, JPanel panel) {
+        this.object = object;
+        this.panel = panel;
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_W -> object.transform(Matrix4x4.translation(0, 1, 0));
+            case KeyEvent.VK_S -> object.transform(Matrix4x4.translation(0, -1, 0));
+            case KeyEvent.VK_A -> object.transform(Matrix4x4.translation(-1, 0, 0));
+            case KeyEvent.VK_D -> object.transform(Matrix4x4.translation(1, 0, 0));
+            case KeyEvent.VK_LEFT -> object.rotateY(-10);
+            case KeyEvent.VK_RIGHT -> object.rotateY(10);
+            case KeyEvent.VK_UP -> object.rotateX(-10);
+            case KeyEvent.VK_DOWN -> object.rotateX(10);
+            case KeyEvent.VK_Z -> object.scale(1.2);
+            case KeyEvent.VK_X -> object.scale(0.8);
+        }
+        panel.repaint();
+    }
+}
+```
+### Класс представляющий матрицу
+```
+public class Matrix4x4 {
+    private final double[][] matrix = new double[4][4];
+
+    public Matrix4x4() {
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                matrix[i][j] = (i == j) ? 1 : 0;
+            }
+        }
+    }
+
+    public Matrix4x4 multiply(Matrix4x4 other) {
+        Matrix4x4 result = new Matrix4x4();
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                result.matrix[i][j] = 0;
+                for (int k = 0; k < 4; k++) {
+                    result.matrix[i][j] += this.matrix[i][k] * other.matrix[k][j];
+                }
+            }
+        }
+        return result;
+    }
+
+    public double[] transform(double[] point) {
+        double[] result = new double[4];
+        for (int i = 0; i < 4; i++) {
+            result[i] = 0;
+            for (int j = 0; j < 4; j++) {
+                result[i] += matrix[i][j] * point[j];
+            }
+        }
+        return result;
+    }
+
+    public static Matrix4x4 translation(double tx, double ty, double tz) {
+        Matrix4x4 m = new Matrix4x4();
+        m.matrix[0][3] = tx;
+        m.matrix[1][3] = ty;
+        m.matrix[2][3] = tz;
+        return m;
+    }
+
+    public static Matrix4x4 scaling(double sx, double sy, double sz) {
+        Matrix4x4 m = new Matrix4x4();
+        m.matrix[0][0] = sx;
+        m.matrix[1][1] = sy;
+        m.matrix[2][2] = sz;
+        return m;
+    }
+
+    public static Matrix4x4 rotationX(double angle) {
+        Matrix4x4 m = new Matrix4x4();
+        double rad = Math.toRadians(angle);
+        m.matrix[1][1] = Math.cos(rad);
+        m.matrix[1][2] = -Math.sin(rad);
+        m.matrix[2][1] = Math.sin(rad);
+        m.matrix[2][2] = Math.cos(rad);
+        return m;
+    }
+
+    public static Matrix4x4 rotationY(double angle) {
+        Matrix4x4 m = new Matrix4x4();
+        double rad = Math.toRadians(angle);
+        m.matrix[0][0] = Math.cos(rad);
+        m.matrix[0][2] = Math.sin(rad);
+        m.matrix[2][0] = -Math.sin(rad);
+        m.matrix[2][2] = Math.cos(rad);
+        return m;
+    }
+
+    public static Matrix4x4 perspective(double fov, double aspect, double near, double far) {
+        Matrix4x4 m = new Matrix4x4();
+        double f = 1.0 / Math.tan(Math.toRadians(fov) / 2);
+        m.matrix[0][0] = f / aspect;
+        m.matrix[1][1] = f;
+        m.matrix[2][2] = (far + near) / (near - far);
+        m.matrix[2][3] = (2 * far * near) / (near - far);
+        m.matrix[3][2] = -1;
+        m.matrix[3][3] = 0;
+        return m;
+    }
+}
+```
+### Класс представляющий объект
+```
+public class Object3D {
+    private final List<double[]> vertices = new ArrayList<>();
+    private final List<int[]> faces = new ArrayList<>();
+
+    public void addVertex(double x, double y, double z) {
+        vertices.add(new double[]{x, y, z, 1});
+    }
+
+    public void addFace(int[] vertexIndices) {
+        faces.add(vertexIndices);
+    }
+
+    public List<double[]> getVertices() {
+        return vertices;
+    }
+
+    public List<int[]> getFaces() {
+        return faces;
+    }
+
+    public void transform(Matrix4x4 matrix) {
+        for (double[] vertex : vertices) {
+            double[] transformed = matrix.transform(vertex);
+            System.arraycopy(transformed, 0, vertex, 0, 4);
+        }
+    }
+
+    public void rotateY(double angle) {
+        double[] center = findCenter();
+        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
+        transform(Matrix4x4.rotationY(angle));
+        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+    }
+
+    public void rotateX(double angle) {
+        double[] center = findCenter();
+        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
+        transform(Matrix4x4.rotationX(angle));
+        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+    }
+
+    public void scale(double factor) {
+        double[] center = findCenter();
+        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
+        transform(Matrix4x4.scaling(factor, factor, factor));
+        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+    }
+
+    private double[] findCenter() {
+        double x = 0, y = 0, z = 0;
+        for (double[] vertex : vertices) {
+            x += vertex[0];
+            y += vertex[1];
+            z += vertex[2];
+        }
+        int count = vertices.size();
+        return new double[]{x / count, y / count, z / count};
     }
 }
 ```
@@ -84,4 +233,4 @@ public class BSpline {
 - JavaFX
 - Maven
 ## Вывод
-Разработанный графический редактор успешно реализует построение параметрических кривых Эрмита, Безье и B-сплайнов. Добавлена возможность корректировки опорных точек и состыковки сегментов. Реализованы базовые функции матричных вычислений для работы с кривыми.
+В процессе выполнения лабораторной работы были изучены основные методы графической визуализации и трансформации трехмерных объектов. Практическая реализация графического редактора на основе матричных преобразований предоставила ценные навыки в области компьютерной графики и геометрии. Основное внимание было уделено использованию однородных координат и их преобразованию, что является ключевым для работы с трехмерной графикой.
