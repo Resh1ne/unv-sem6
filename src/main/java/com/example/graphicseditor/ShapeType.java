@@ -8,5 +8,7 @@ public enum ShapeType {
     PARABOLA,
     HERMITE,
     BEZIER,
-    BSPLINE
+    BSPLINE,
+    POLYGON,
+    CONVEX_HULL
 }

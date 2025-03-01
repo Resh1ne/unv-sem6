@@ -15,10 +15,12 @@ public class GraphicsEditor extends JFrame {
         EditorPanel editorPanel = new EditorPanel();
         DebugPanel debugPanel = new DebugPanel();
         Editor3DPanel editor3DPanel = new Editor3DPanel();
+        PolygonPanel polygonPanel = new PolygonPanel();
 
         mainTabbedPane.addTab("Редактор 2D", editorPanel);
         mainTabbedPane.addTab("Отладка", debugPanel);
         mainTabbedPane.addTab("Редактор 3D", editor3DPanel);
+        mainTabbedPane.addTab("Построение полигонов", polygonPanel);
 
         add(mainTabbedPane);
 
@@ -30,6 +32,8 @@ public class GraphicsEditor extends JFrame {
             ShapeType selectedShape = (ShapeType) shapeComboBox.getSelectedItem();
             editorPanel.setShapeType(selectedShape);
             debugPanel.setShapeType(selectedShape);
+            polygonPanel.setShapeType(selectedShape);
+            assert selectedShape != null;
             updateAlgorithmComboBox(algorithmComboBox, selectedShape);
         });
 
@@ -37,6 +41,7 @@ public class GraphicsEditor extends JFrame {
             AlgorithmType selectedAlgorithm = (AlgorithmType) algorithmComboBox.getSelectedItem();
             editorPanel.setAlgorithmType(selectedAlgorithm);
             debugPanel.setAlgorithmType(selectedAlgorithm);
+            polygonPanel.setAlgorithmType(selectedAlgorithm);
         });
 
         toolBar.add(new JLabel("Фигура: "));
@@ -61,7 +66,13 @@ public class GraphicsEditor extends JFrame {
                 algorithmComboBox.addItem(AlgorithmType.BRESENHAM);
                 algorithmComboBox.addItem(AlgorithmType.WU);
                 break;
-            case CIRCLE:
+            case POLYGON:
+                algorithmComboBox.addItem(AlgorithmType.DDA);
+                algorithmComboBox.addItem(AlgorithmType.BRESENHAM);
+                break;
+            case CONVEX_HULL:
+                algorithmComboBox.addItem(AlgorithmType.GRAHAM);
+                algorithmComboBox.addItem(AlgorithmType.JARVIS);
                 break;
         }
     }
