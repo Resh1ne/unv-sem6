@@ -71,22 +71,6 @@ public class Matrix4x4 {
         return m;
     }
 
-    public static Matrix4x4 rotationZ(double angle) {
-        Matrix4x4 m = new Matrix4x4();
-        double rad = Math.toRadians(angle);
-        m.matrix[0][0] = Math.cos(rad);
-        m.matrix[0][1] = -Math.sin(rad);
-        m.matrix[1][0] = Math.sin(rad);
-        m.matrix[1][1] = Math.cos(rad);
-        return m;
-    }
-
-    public static Matrix4x4 reflectionZ() {
-        Matrix4x4 m = new Matrix4x4();
-        m.matrix[2][2] = -1;  // Отражение по оси Z
-        return m;
-    }
-
     public static Matrix4x4 perspective(double fov, double aspect, double near, double far) {
         Matrix4x4 m = new Matrix4x4();
         double f = 1.0 / Math.tan(Math.toRadians(fov) / 2);

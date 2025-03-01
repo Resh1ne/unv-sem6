@@ -16,15 +16,17 @@ public class KeyboardHandler extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_W -> object.transform(Matrix4x4.translation(0, 0, -1)); // Вперед по Z
-            case KeyEvent.VK_S -> object.transform(Matrix4x4.translation(0, 0, 1));  // Назад по Z
-            case KeyEvent.VK_A -> object.transform(Matrix4x4.translation(-1, 0, 0)); // Влево по X
-            case KeyEvent.VK_D -> object.transform(Matrix4x4.translation(1, 0, 0));  // Вправо по X
-            case KeyEvent.VK_Q -> object.rotateY(-10); // Поворот влево вокруг центра
-            case KeyEvent.VK_E -> object.rotateY(10);  // Поворот вправо вокруг центра
-            case KeyEvent.VK_Z -> object.scale(1.2);  // Увеличение
-            case KeyEvent.VK_X -> object.scale(0.8);   // Уменьшение
+            case KeyEvent.VK_W -> object.transform(Matrix4x4.translation(0, 1, 0));
+            case KeyEvent.VK_S -> object.transform(Matrix4x4.translation(0, -1, 0));
+            case KeyEvent.VK_A -> object.transform(Matrix4x4.translation(-1, 0, 0));
+            case KeyEvent.VK_D -> object.transform(Matrix4x4.translation(1, 0, 0));
+            case KeyEvent.VK_LEFT -> object.rotateY(-10);
+            case KeyEvent.VK_RIGHT -> object.rotateY(10);
+            case KeyEvent.VK_UP -> object.rotateX(-10);
+            case KeyEvent.VK_DOWN -> object.rotateX(10);
+            case KeyEvent.VK_Z -> object.scale(1.2);
+            case KeyEvent.VK_X -> object.scale(0.8);
         }
-        panel.repaint(); // Перерисовываем панель после трансформации
+        panel.repaint();
     }
 }

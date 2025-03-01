@@ -18,7 +18,7 @@ public class Editor3DPanel extends JPanel {
         setFocusable(true);
 
         try {
-            object3D = ObjectLoader.loadFromFile("other.obj");
+            object3D = ObjectLoader.loadFromFile("other2.obj");
 
             // Начальное масштабирование и смещение объекта
             Matrix4x4 scale = Matrix4x4.scaling(50, 50, 50); // Уменьшим начальный масштаб
