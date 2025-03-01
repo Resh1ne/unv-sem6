@@ -21,7 +21,7 @@ public class Editor3DPanel extends JPanel {
             object3D = ObjectLoader.loadFromFile("other.obj");
 
             // Начальное масштабирование и смещение объекта
-            Matrix4x4 scale = Matrix4x4.scaling(200, 200, 200); // Увеличиваем масштаб
+            Matrix4x4 scale = Matrix4x4.scaling(50, 50, 50); // Уменьшим начальный масштаб
             Matrix4x4 translate = Matrix4x4.translation(0, 0, -10); // Смещаем объект вперед
             object3D.transform(scale.multiply(translate)); // Применяем преобразования
         } catch (IOException e) {

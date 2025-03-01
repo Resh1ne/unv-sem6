@@ -29,4 +29,40 @@ public class Object3D {
             System.arraycopy(transformed, 0, vertex, 0, 4);
         }
     }
+
+    // Поворот вокруг центра объекта
+    public void rotateY(double angle) {
+        // Находим центр объекта
+        double[] center = findCenter();
+        // Переносим объект в начало координат
+        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
+        // Поворачиваем
+        transform(Matrix4x4.rotationY(angle));
+        // Возвращаем объект на место
+        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+    }
+
+    // Масштабирование относительно центра объекта
+    public void scale(double factor) {
+        // Находим центр объекта
+        double[] center = findCenter();
+        // Переносим объект в начало координат
+        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
+        // Масштабируем
+        transform(Matrix4x4.scaling(factor, factor, factor));
+        // Возвращаем объект на место
+        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+    }
+
+    // Нахождение центра объекта
+    private double[] findCenter() {
+        double x = 0, y = 0, z = 0;
+        for (double[] vertex : vertices) {
+            x += vertex[0];
+            y += vertex[1];
+            z += vertex[2];
+        }
+        int count = vertices.size();
+        return new double[]{x / count, y / count, z / count};
+    }
 }
