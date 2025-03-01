@@ -1,5 +1,7 @@
 package com.example.graphicseditor;
 
+import com.example.algorithms.lb5.PolygonUtils;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -44,10 +46,14 @@ public class GraphicsEditor extends JFrame {
             polygonPanel.setAlgorithmType(selectedAlgorithm);
         });
 
+        JButton checkConvexButton = getCheckConvexButton(polygonPanel);
+
         toolBar.add(new JLabel("Фигура: "));
         toolBar.add(shapeComboBox);
         toolBar.add(new JLabel("Алгоритм: "));
         toolBar.add(algorithmComboBox);
+        toolBar.addSeparator();
+        toolBar.add(checkConvexButton);
 
         add(toolBar, BorderLayout.NORTH);
 
@@ -56,6 +62,19 @@ public class GraphicsEditor extends JFrame {
                 editor3DPanel.requestFocusInWindow();
             }
         });
+    }
+
+    private JButton getCheckConvexButton(PolygonPanel polygonPanel) {
+        JButton checkConvexButton = new JButton("Проверить выпуклость");
+        checkConvexButton.addActionListener(e -> {
+            boolean isConvex = PolygonUtils.isConvex(polygonPanel.getLastCompletedPolygonPoints());
+            if (isConvex) {
+                JOptionPane.showMessageDialog(this, "Полигон выпуклый.", "Результат проверки", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Полигон невыпуклый.", "Результат проверки", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        return checkConvexButton;
     }
 
     private void updateAlgorithmComboBox(JComboBox<AlgorithmType> algorithmComboBox, ShapeType shapeType) {

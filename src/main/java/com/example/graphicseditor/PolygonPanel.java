@@ -24,6 +24,7 @@ public class PolygonPanel extends JPanel {
     private final List<List<Pixel>> allWuLines = new ArrayList<>();
     private final List<Pixel> currentWuLine = new ArrayList<>();
     private final List<Point> polygonPoints = new ArrayList<>(); // Текущие точки полигона
+    private List<Point> lastCompletedPolygon = new ArrayList<>();
     private Point startPoint = null;
     private ShapeType shapeType = ShapeType.LINE;
     private AlgorithmType algorithmType = AlgorithmType.DDA;
@@ -38,7 +39,6 @@ public class PolygonPanel extends JPanel {
                     if (e.getButton() == MouseEvent.BUTTON3) { // Правая кнопка мыши
                         if (polygonPoints.size() > 2) {
                             if (shapeType == ShapeType.CONVEX_HULL) {
-                                // Строим выпуклую оболочку
                                 List<Point> convexHullPoints;
                                 if (algorithmType == AlgorithmType.GRAHAM) {
                                     convexHullPoints = GrahamScan.convexHull(polygonPoints);
@@ -46,11 +46,13 @@ public class PolygonPanel extends JPanel {
                                     convexHullPoints = JarvisMarch.convexHull(polygonPoints);
                                 }
                                 allConvexHulls.add(convexHullPoints); // Сохраняем выпуклую оболочку
+//                                lastCompletedPolygon = new ArrayList<>(convexHullPoints); // Сохраняем последний полигон
                             } else {
-                                // Рисуем полигон
                                 List<Point> polygonPixels = PolygonAlgorithm.drawPolygon(polygonPoints, algorithmType);
                                 allPolygons.add(polygonPixels); // Сохраняем полигон
+//                                lastCompletedPolygon = new ArrayList<>(polygonPixels); // Сохраняем последний полигон
                             }
+                            lastCompletedPolygon = new ArrayList<>(polygonPoints);
                             polygonPoints.clear();
                             repaint();
                         }
@@ -172,6 +174,10 @@ public class PolygonPanel extends JPanel {
             }
             allLines.add(new ArrayList<>(currentLine));
         }
+    }
+
+    public List<Point> getLastCompletedPolygonPoints() {
+        return lastCompletedPolygon;
     }
 
     public void setShapeType(ShapeType shapeType) {
