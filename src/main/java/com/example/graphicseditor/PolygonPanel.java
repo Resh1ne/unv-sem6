@@ -1,12 +1,9 @@
 package com.example.graphicseditor;
 
-import com.example.algorithms.lb1.BresenhamAlgorithm;
-import com.example.algorithms.lb1.DDAAlgorithm;
-import com.example.algorithms.lb1.Pixel;
-import com.example.algorithms.lb1.WuAlgorithm;
 import com.example.algorithms.lb5.GrahamScan;
 import com.example.algorithms.lb5.JarvisMarch;
 import com.example.algorithms.lb5.PolygonAlgorithm;
+import com.example.algorithms.lb5.PolygonUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,13 +14,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class PolygonPanel extends JPanel {
-    private final List<List<Point>> allLines = new ArrayList<>(); // Все линии (чёрные)
-    private final List<List<Point>> allPolygons = new ArrayList<>(); // Все полигоны (синие)
-    private final List<List<Point>> allConvexHulls = new ArrayList<>(); // Все выпуклые оболочки (красные)
-    private final List<Point> currentLine = new ArrayList<>();
-    private final List<List<Pixel>> allWuLines = new ArrayList<>();
-    private final List<Pixel> currentWuLine = new ArrayList<>();
-    private final List<Point> polygonPoints = new ArrayList<>(); // Текущие точки полигона
+    private final List<List<Point>> allLines = new ArrayList<>();
+    private final List<List<Point>> allPolygons = new ArrayList<>();
+    private final List<List<Point>> allConvexHulls = new ArrayList<>();
+    private final List<Point> polygonPoints = new ArrayList<>();
     private List<Point> lastCompletedPolygon = new ArrayList<>();
     private Point startPoint = null;
     private ShapeType shapeType = ShapeType.LINE;
@@ -32,11 +26,17 @@ public class PolygonPanel extends JPanel {
     public PolygonPanel() {
         setBackground(Color.WHITE);
 
+        JButton intersectionButton = new JButton("Найти пересечения");
+        intersectionButton.addActionListener(e -> showIntersectionPoints());
+
+        setLayout(new BorderLayout());
+        add(intersectionButton, BorderLayout.SOUTH);
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (shapeType == ShapeType.POLYGON || shapeType == ShapeType.CONVEX_HULL) {
-                    if (e.getButton() == MouseEvent.BUTTON3) { // Правая кнопка мыши
+                    if (e.getButton() == MouseEvent.BUTTON3) {
                         if (polygonPoints.size() > 2) {
                             if (shapeType == ShapeType.CONVEX_HULL) {
                                 List<Point> convexHullPoints;
@@ -45,18 +45,16 @@ public class PolygonPanel extends JPanel {
                                 } else {
                                     convexHullPoints = JarvisMarch.convexHull(polygonPoints);
                                 }
-                                allConvexHulls.add(convexHullPoints); // Сохраняем выпуклую оболочку
-//                                lastCompletedPolygon = new ArrayList<>(convexHullPoints); // Сохраняем последний полигон
+                                allConvexHulls.add(convexHullPoints);
                             } else {
                                 List<Point> polygonPixels = PolygonAlgorithm.drawPolygon(polygonPoints, algorithmType);
-                                allPolygons.add(polygonPixels); // Сохраняем полигон
-//                                lastCompletedPolygon = new ArrayList<>(polygonPixels); // Сохраняем последний полигон
+                                allPolygons.add(polygonPixels);
                             }
                             lastCompletedPolygon = new ArrayList<>(polygonPoints);
                             polygonPoints.clear();
                             repaint();
                         }
-                    } else if (e.getButton() == MouseEvent.BUTTON1) { // Левая кнопка мыши
+                    } else if (e.getButton() == MouseEvent.BUTTON1) {
                         polygonPoints.add(e.getPoint());
                         repaint();
                     }
@@ -79,7 +77,6 @@ public class PolygonPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
 
-        // Отрисовка всех линий (чёрные)
         g2d.setColor(Color.BLACK);
         for (List<Point> line : allLines) {
             for (int i = 0; i < line.size() - 1; i++) {
@@ -89,7 +86,6 @@ public class PolygonPanel extends JPanel {
             }
         }
 
-        // Отрисовка всех полигонов (синие)
         g2d.setColor(Color.BLUE);
         for (List<Point> polygon : allPolygons) {
             for (int i = 0; i < polygon.size() - 1; i++) {
@@ -97,13 +93,11 @@ public class PolygonPanel extends JPanel {
                 Point p2 = polygon.get(i + 1);
                 g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
             }
-            // Замыкаем полигон
             Point p1 = polygon.get(polygon.size() - 1);
             Point p2 = polygon.get(0);
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
 
-        // Отрисовка всех выпуклых оболочек (красные)
         g2d.setColor(Color.RED);
         for (List<Point> convexHull : allConvexHulls) {
             for (int i = 0; i < convexHull.size() - 1; i++) {
@@ -111,38 +105,13 @@ public class PolygonPanel extends JPanel {
                 Point p2 = convexHull.get(i + 1);
                 g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
             }
-            // Замыкаем оболочку
             Point p1 = convexHull.get(convexHull.size() - 1);
             Point p2 = convexHull.get(0);
             g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
         }
 
-        // Отрисовка текущей линии
-        g2d.setColor(Color.BLACK);
-        for (int i = 0; i < currentLine.size() - 1; i++) {
-            Point p1 = currentLine.get(i);
-            Point p2 = currentLine.get(i + 1);
-            g2d.drawLine(p1.x, p1.y, p2.x, p2.y);
-        }
-
-        // Отрисовка линий Ву
-        for (List<Pixel> line : allWuLines) {
-            for (Pixel pixel : line) {
-                float brightness = pixel.getBrightness();
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, brightness));
-                g2d.fillRect(pixel.getX(), pixel.getY(), 1, 1);
-            }
-        }
-
-        for (Pixel pixel : currentWuLine) {
-            float brightness = pixel.getBrightness();
-            g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, brightness));
-            g2d.fillRect(pixel.getX(), pixel.getY(), 1, 1);
-        }
-
-        // Отрисовка текущего полигона
         if (polygonPoints.size() > 1) {
-            g2d.setColor(Color.BLUE); // Цвет для текущего полигона
+            g2d.setColor(Color.GRAY);
             for (int i = 0; i < polygonPoints.size() - 1; i++) {
                 Point p1 = polygonPoints.get(i);
                 Point p2 = polygonPoints.get(i + 1);
@@ -158,22 +127,45 @@ public class PolygonPanel extends JPanel {
     }
 
     private void drawLine(Point start, Point end) {
-        if (algorithmType == AlgorithmType.WU) {
-            currentWuLine.clear();
-            currentWuLine.addAll(WuAlgorithm.drawLineWu(start.x, start.y, end.x, end.y));
-            allWuLines.add(new ArrayList<>(currentWuLine));
-        } else {
-            currentLine.clear();
-            switch (algorithmType) {
-                case DDA:
-                    currentLine.addAll(DDAAlgorithm.drawLineDDA(start.x, start.y, end.x, end.y));
-                    break;
-                case BRESENHAM:
-                    currentLine.addAll(BresenhamAlgorithm.drawLineBresenham(start.x, start.y, end.x, end.y));
-                    break;
+        List<Point> line = new ArrayList<>();
+        line.add(start);
+        line.add(end);
+        allLines.add(line);
+    }
+
+    private void showIntersectionPoints() {
+        StringBuilder message = new StringBuilder("Точки пересечения:\n");
+
+        System.out.println("Количество линий: " + allLines.size());
+        System.out.println("Количество полигонов: " + allPolygons.size());
+
+        for (List<Point> line : allLines) {
+            if (line.size() < 2) {
+                System.out.println("Линия пропущена, так как содержит меньше двух точек: " + line);
+                continue;
             }
-            allLines.add(new ArrayList<>(currentLine));
+
+            Point start = line.get(0);
+            Point end = line.get(1);
+
+            System.out.println("Обработка линии: " + start + " -> " + end);
+
+            for (List<Point> polygon : allPolygons) {
+                System.out.println("Обработка полигона: " + polygon);
+
+                List<Point> intersections = PolygonUtils.findIntersectionsWithPolygon(line, polygon);
+                for (Point intersection : intersections) {
+                    message.append(String.format("Линия [(%d, %d), (%d, %d)] пересекает полигон в точке (%d, %d)\n",
+                            start.x, start.y, end.x, end.y, intersection.x, intersection.y));
+                }
+            }
         }
+
+        if (message.toString().equals("Точки пересечения:\n")) {
+            message.append("Пересечений не найдено.");
+        }
+
+        JOptionPane.showMessageDialog(this, message.toString(), "Точки пересечения", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public List<Point> getLastCompletedPolygonPoints() {
@@ -182,9 +174,6 @@ public class PolygonPanel extends JPanel {
 
     public void setShapeType(ShapeType shapeType) {
         this.shapeType = shapeType;
-        if (shapeType != ShapeType.POLYGON && shapeType != ShapeType.CONVEX_HULL) {
-            polygonPoints.clear();
-        }
     }
 
     public void setAlgorithmType(AlgorithmType algorithmType) {
