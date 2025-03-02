@@ -1,230 +1,173 @@
-# Лабораторная работа №4
+# Лабораторная работа №5
 ## Цель
-Разработать графическую программу, выполняющую следующие геометрические преобразования над трехмерным объектом: перемещение, поворот, скалирование, отображение, перспектива. В программе должно быть предусмотрено считывание координат 3D объекта из текстового файла, обработка клавиатуры и выполнение геометрических преобразований в зависимости от нажатых клавиш. Все преобразования следует производить с использованием матричного аппарата и представления координат в однородных координатах.
-## Основные теоретические сведения
-- Однородные координаты — это система координат, которая позволяет выполнять преобразования, такие как перемещение, поворот и масштабирование, с использованием матриц.
-- Матрицы преобразования — это инструменты, используемые для осуществления различных геометрических изменений объектов в пространстве.
+Разработать элементарный графический редактор, реализующий построение полигонов. Реализованная программа должна уметь проверять полигон на выпуклость, находить его внутренние нормали. Программа должна выполнять построение выпуклых оболочек методом обхода Грэхема и методом Джарвиса. Выбор метода задается из пункта меню и должен быть доступен через панель инструментов «Построение полигонов». Графический редактор должен позволять рисовать линии первого порядка (лабораторная работа №1) и определять точки пересечения отрезка со стороной полигона, также программа должна определять принадлежность введенной точки полигону.
+## Алгоритмы
+Для проверки полигона на выпуклость используется алгоритм, основанный на определении направления поворота для каждой тройки последовательных вершин полигона. Если все тройки вершин имеют одинаковое направление поворота, то полигон является выпуклым.
+### Метод обхода Грэхема
+Алгоритм, который строит выпуклую оболочку, обходя точки в порядке увеличения угла относительно начальной точки.
+### Метод Джарвиса
+Алгоритм, который строит выпуклую оболочку, последовательно находя точки с наименьшим углом относительно предыдущей точки.
 ## Интерфейс
-![image](https://github.com/user-attachments/assets/2b64e18c-4f8e-4af9-90e2-eec2ac02e97c)
+![image](https://github.com/user-attachments/assets/ccf0fe76-0c81-43c6-b2b5-03929ea623fd)
 
 ## Реализация
-### Класс для загрузки объекта
+### Метод обхода Грэхема
 ```
-public class ObjectLoader {
-    public static Object3D loadFromFile(String filename) throws IOException {
-        Object3D object = new Object3D();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) continue;
+public static List<Point> convexHull(List<Point> points) {
+        if (points.size() < 3) return points;
 
-                if (line.startsWith("v ")) {
-                    String[] parts = line.split("\\s+");
-                    if (parts.length < 4) continue;
+        Point minYPoint = findMinYPoint(points);
 
-                    try {
-                        double x = Double.parseDouble(parts[1]);
-                        double y = Double.parseDouble(parts[2]);
-                        double z = Double.parseDouble(parts[3]);
-                        object.addVertex(x, y, z);
-                    } catch (NumberFormatException e) {
-                        System.err.println("Ошибка чтения координат: " + line);
-                    }
-                } else if (line.startsWith("f ")) {
-                    String[] parts = line.split("\\s+");
-                    if (parts.length < 4) continue;
+        points.sort((p1, p2) -> {
+            double angle1 = polarAngle(minYPoint, p1);
+            double angle2 = polarAngle(minYPoint, p2);
+            if (angle1 < angle2) return -1;
+            if (angle1 > angle2) return 1;
+            return Integer.compare(distanceSq(minYPoint, p1), distanceSq(minYPoint, p2));
+        });
 
-                    try {
-                        int[] vertexIndices = new int[parts.length - 1];
-                        for (int i = 1; i < parts.length; i++) {
-                            vertexIndices[i - 1] = Integer.parseInt(parts[i].split("/")[0]) - 1;
-                        }
-                        object.addFace(vertexIndices);
-                    } catch (NumberFormatException e) {
-                        System.err.println("Ошибка чтения индексов граней: " + line);
-                    }
+        Stack<Point> hull = new Stack<>();
+        hull.push(points.get(0));
+        hull.push(points.get(1));
+
+        for (int i = 2; i < points.size(); i++) {
+            while (hull.size() > 1 && orientation(hull.get(hull.size() - 2), hull.peek(), points.get(i)) != 2) {
+                hull.pop();
+            }
+            hull.push(points.get(i));
+        }
+
+        return new ArrayList<>(hull);
+    }
+```
+### Метод Джарвиса
+```
+public static List<Point> convexHull(List<Point> points) {
+        if (points.size() < 3) return points;
+
+        List<Point> hull = new ArrayList<>();
+
+        Point startPoint = findMinXPoint(points);
+        Point currentPoint = startPoint;
+
+        do {
+            hull.add(currentPoint);
+            Point nextPoint = points.get(0);
+
+            for (Point p : points) {
+                if (p == currentPoint) continue;
+                int orient = orientation(currentPoint, nextPoint, p);
+                if (orient == 2 || (orient == 0 && distanceSq(currentPoint, p) > distanceSq(currentPoint, nextPoint))) {
+                    nextPoint = p;
                 }
             }
-        }
-        return object;
-    }
-}
-```
-### Класс для обработки нажатия клавиш
-```
-public class KeyboardHandler extends KeyAdapter {
-    private final Object3D object;
-    private final JPanel panel;
+            currentPoint = nextPoint;
+        } while (currentPoint != startPoint);
 
-    public KeyboardHandler(Object3D object, JPanel panel) {
-        this.object = object;
-        this.panel = panel;
+        return hull;
     }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        switch (e.getKeyCode()) {
-            case KeyEvent.VK_W -> object.transform(Matrix4x4.translation(0, 1, 0));
-            case KeyEvent.VK_S -> object.transform(Matrix4x4.translation(0, -1, 0));
-            case KeyEvent.VK_A -> object.transform(Matrix4x4.translation(-1, 0, 0));
-            case KeyEvent.VK_D -> object.transform(Matrix4x4.translation(1, 0, 0));
-            case KeyEvent.VK_LEFT -> object.rotateY(-10);
-            case KeyEvent.VK_RIGHT -> object.rotateY(10);
-            case KeyEvent.VK_UP -> object.rotateX(-10);
-            case KeyEvent.VK_DOWN -> object.rotateX(10);
-            case KeyEvent.VK_Z -> object.scale(1.2);
-            case KeyEvent.VK_X -> object.scale(0.8);
-        }
-        panel.repaint();
-    }
-}
 ```
-### Класс представляющий матрицу
+### Класс для определения выпуклости и пересечений
 ```
-public class Matrix4x4 {
-    private final double[][] matrix = new double[4][4];
+public class PolygonUtils {
+    public static boolean isConvex(List<Point> polygon) {
+        if (polygon.size() < 3) return false;
 
-    public Matrix4x4() {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                matrix[i][j] = (i == j) ? 1 : 0;
+        int n = polygon.size();
+        int sign = 0;
+
+        for (int i = 0; i < n; i++) {
+            Point p1 = polygon.get(i);
+            Point p2 = polygon.get((i + 1) % n);
+            Point p3 = polygon.get((i + 2) % n);
+
+            int crossProduct = (p2.x - p1.x) * (p3.y - p2.y) - (p2.y - p1.y) * (p3.x - p2.x);
+
+            if (crossProduct == 0) continue;
+
+            if (sign == 0) {
+                sign = crossProduct > 0 ? 1 : -1;
+            } else if (sign * crossProduct < 0) {
+                return false;
             }
         }
+
+        return true;
     }
 
-    public Matrix4x4 multiply(Matrix4x4 other) {
-        Matrix4x4 result = new Matrix4x4();
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                result.matrix[i][j] = 0;
-                for (int k = 0; k < 4; k++) {
-                    result.matrix[i][j] += this.matrix[i][k] * other.matrix[k][j];
-                }
+    public static List<Point> calculateInnerNormals(List<Point> polygon) {
+        List<Point> normals = new ArrayList<>();
+        int n = polygon.size();
+
+        for (int i = 0; i < n; i++) {
+            Point p1 = polygon.get(i);
+            Point p2 = polygon.get((i + 1) % n);
+
+            int dx = p2.x - p1.x;
+            int dy = p2.y - p1.y;
+
+            Point normal = new Point(-dy, dx);
+
+            normals.add(normal);
+        }
+
+        return normals;
+    }
+
+    public static Point findIntersection(Point p1, Point p2, Point p3, Point p4) {
+        double x1 = p1.x, y1 = p1.y;
+        double x2 = p2.x, y2 = p2.y;
+        double x3 = p3.x, y3 = p3.y;
+        double x4 = p4.x, y4 = p4.y;
+
+        double denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+        if (denominator == 0) {
+            System.out.println("Отрезки параллельны или совпадают: " + p1 + "->" + p2 + " и " + p3 + "->" + p4);
+            return null;
+        }
+
+        double t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denominator;
+        double u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denominator;
+
+        if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+            int x = (int) (x1 + t * (x2 - x1));
+            int y = (int) (y1 + t * (y2 - y1));
+            Point intersection = new Point(x, y);
+            System.out.println("Найдено пересечение: " + intersection + " между " + p1 + "->" + p2 + " и " + p3 + "->" + p4);
+            return intersection;
+        }
+
+        System.out.println("Отрезки не пересекаются: " + p1 + "->" + p2 + " и " + p3 + "->" + p4);
+        return null;
+    }
+
+    public static List<Point> findIntersectionsWithPolygon(List<Point> line, List<Point> polygon) {
+        List<Point> intersections = new ArrayList<>();
+
+        if (line.size() < 2) {
+            System.out.println("Линия содержит меньше двух точек: " + line);
+            return intersections;
+        }
+
+        Point lineStart = line.get(0);
+        Point lineEnd = line.get(1);
+
+        System.out.println("Поиск пересечений для линии: " + lineStart + " -> " + lineEnd);
+
+        for (int i = 0; i < polygon.size(); i++) {
+            Point p1 = polygon.get(i);
+            Point p2 = polygon.get((i + 1) % polygon.size());
+
+            System.out.println("Проверка стороны полигона: " + p1 + " -> " + p2);
+
+            Point intersection = findIntersection(lineStart, lineEnd, p1, p2);
+            if (intersection != null) {
+                intersections.add(intersection);
             }
         }
-        return result;
-    }
 
-    public double[] transform(double[] point) {
-        double[] result = new double[4];
-        for (int i = 0; i < 4; i++) {
-            result[i] = 0;
-            for (int j = 0; j < 4; j++) {
-                result[i] += matrix[i][j] * point[j];
-            }
-        }
-        return result;
-    }
-
-    public static Matrix4x4 translation(double tx, double ty, double tz) {
-        Matrix4x4 m = new Matrix4x4();
-        m.matrix[0][3] = tx;
-        m.matrix[1][3] = ty;
-        m.matrix[2][3] = tz;
-        return m;
-    }
-
-    public static Matrix4x4 scaling(double sx, double sy, double sz) {
-        Matrix4x4 m = new Matrix4x4();
-        m.matrix[0][0] = sx;
-        m.matrix[1][1] = sy;
-        m.matrix[2][2] = sz;
-        return m;
-    }
-
-    public static Matrix4x4 rotationX(double angle) {
-        Matrix4x4 m = new Matrix4x4();
-        double rad = Math.toRadians(angle);
-        m.matrix[1][1] = Math.cos(rad);
-        m.matrix[1][2] = -Math.sin(rad);
-        m.matrix[2][1] = Math.sin(rad);
-        m.matrix[2][2] = Math.cos(rad);
-        return m;
-    }
-
-    public static Matrix4x4 rotationY(double angle) {
-        Matrix4x4 m = new Matrix4x4();
-        double rad = Math.toRadians(angle);
-        m.matrix[0][0] = Math.cos(rad);
-        m.matrix[0][2] = Math.sin(rad);
-        m.matrix[2][0] = -Math.sin(rad);
-        m.matrix[2][2] = Math.cos(rad);
-        return m;
-    }
-
-    public static Matrix4x4 perspective(double fov, double aspect, double near, double far) {
-        Matrix4x4 m = new Matrix4x4();
-        double f = 1.0 / Math.tan(Math.toRadians(fov) / 2);
-        m.matrix[0][0] = f / aspect;
-        m.matrix[1][1] = f;
-        m.matrix[2][2] = (far + near) / (near - far);
-        m.matrix[2][3] = (2 * far * near) / (near - far);
-        m.matrix[3][2] = -1;
-        m.matrix[3][3] = 0;
-        return m;
-    }
-}
-```
-### Класс представляющий объект
-```
-public class Object3D {
-    private final List<double[]> vertices = new ArrayList<>();
-    private final List<int[]> faces = new ArrayList<>();
-
-    public void addVertex(double x, double y, double z) {
-        vertices.add(new double[]{x, y, z, 1});
-    }
-
-    public void addFace(int[] vertexIndices) {
-        faces.add(vertexIndices);
-    }
-
-    public List<double[]> getVertices() {
-        return vertices;
-    }
-
-    public List<int[]> getFaces() {
-        return faces;
-    }
-
-    public void transform(Matrix4x4 matrix) {
-        for (double[] vertex : vertices) {
-            double[] transformed = matrix.transform(vertex);
-            System.arraycopy(transformed, 0, vertex, 0, 4);
-        }
-    }
-
-    public void rotateY(double angle) {
-        double[] center = findCenter();
-        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
-        transform(Matrix4x4.rotationY(angle));
-        transform(Matrix4x4.translation(center[0], center[1], center[2]));
-    }
-
-    public void rotateX(double angle) {
-        double[] center = findCenter();
-        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
-        transform(Matrix4x4.rotationX(angle));
-        transform(Matrix4x4.translation(center[0], center[1], center[2]));
-    }
-
-    public void scale(double factor) {
-        double[] center = findCenter();
-        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
-        transform(Matrix4x4.scaling(factor, factor, factor));
-        transform(Matrix4x4.translation(center[0], center[1], center[2]));
-    }
-
-    private double[] findCenter() {
-        double x = 0, y = 0, z = 0;
-        for (double[] vertex : vertices) {
-            x += vertex[0];
-            y += vertex[1];
-            z += vertex[2];
-        }
-        int count = vertices.size();
-        return new double[]{x / count, y / count, z / count};
+        return intersections;
     }
 }
 ```
@@ -233,4 +176,4 @@ public class Object3D {
 - JavaFX
 - Maven
 ## Вывод
-В процессе выполнения лабораторной работы были изучены основные методы графической визуализации и трансформации трехмерных объектов. Практическая реализация графического редактора на основе матричных преобразований предоставила ценные навыки в области компьютерной графики и геометрии. Основное внимание было уделено использованию однородных координат и их преобразованию, что является ключевым для работы с трехмерной графикой.
+В ходе выполнения лабораторной работы был разработан элементарный графический редактор, который позволяет выполнять различные геометрические преобразования на полигонах. Программа успешно проверяет полигоны на выпуклость, находит внутренние нормали, строит выпуклые оболочки методами Грэхема и Джарвиса, а также определяет точки пересечения отрезков и принадлежность точек полигонам. Реализованные алгоритмы работают корректно и позволяют эффективно решать поставленные задачи.
