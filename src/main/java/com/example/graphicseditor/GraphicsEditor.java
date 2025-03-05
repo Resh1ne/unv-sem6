@@ -1,10 +1,7 @@
 package com.example.graphicseditor;
 
-import com.example.algorithms.lb5.PolygonUtils;
-
 import javax.swing.*;
 import java.awt.*;
-import java.util.List;
 
 public class GraphicsEditor extends JFrame {
 
@@ -35,7 +32,6 @@ public class GraphicsEditor extends JFrame {
             ShapeType selectedShape = (ShapeType) shapeComboBox.getSelectedItem();
             editorPanel.setShapeType(selectedShape);
             debugPanel.setShapeType(selectedShape);
-            polygonPanel.setShapeType(selectedShape);
             assert selectedShape != null;
             updateAlgorithmComboBox(algorithmComboBox, selectedShape);
         });
@@ -44,20 +40,13 @@ public class GraphicsEditor extends JFrame {
             AlgorithmType selectedAlgorithm = (AlgorithmType) algorithmComboBox.getSelectedItem();
             editorPanel.setAlgorithmType(selectedAlgorithm);
             debugPanel.setAlgorithmType(selectedAlgorithm);
-            polygonPanel.setAlgorithmType(selectedAlgorithm);
         });
 
-        JButton checkConvexButton = getCheckConvexButton(polygonPanel);
-        JButton calculateNormalsButton = getCalculateNormalsButton(polygonPanel);
 
         toolBar.add(new JLabel("Фигура: "));
         toolBar.add(shapeComboBox);
         toolBar.add(new JLabel("Алгоритм: "));
         toolBar.add(algorithmComboBox);
-        toolBar.addSeparator();
-        toolBar.add(checkConvexButton);
-        toolBar.addSeparator();
-        toolBar.add(calculateNormalsButton);
 
         add(toolBar, BorderLayout.NORTH);
 
@@ -68,35 +57,6 @@ public class GraphicsEditor extends JFrame {
         });
     }
 
-    private JButton getCheckConvexButton(PolygonPanel polygonPanel) {
-        JButton checkConvexButton = new JButton("Проверить выпуклость");
-        checkConvexButton.addActionListener(e -> {
-            boolean isConvex = PolygonUtils.isConvex(polygonPanel.getLastCompletedPolygonPoints());
-            if (isConvex) {
-                JOptionPane.showMessageDialog(this, "Полигон выпуклый.", "Результат проверки", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Полигон невыпуклый.", "Результат проверки", JOptionPane.WARNING_MESSAGE);
-            }
-        });
-        return checkConvexButton;
-    }
-
-    private JButton getCalculateNormalsButton(PolygonPanel polygonPanel) {
-        JButton calculateNormalsButton = new JButton("Найти внутренние нормали");
-        calculateNormalsButton.addActionListener(e -> {
-            List<Point> normals = PolygonUtils.calculateInnerNormals(polygonPanel.getLastCompletedPolygonPoints());
-            if (normals.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Полигон не построен.", "Ошибка", JOptionPane.WARNING_MESSAGE);
-            } else {
-                StringBuilder result = new StringBuilder("Внутренние нормали:\n");
-                for (Point normal : normals) {
-                    result.append("(").append(normal.x).append(", ").append(normal.y).append(")\n");
-                }
-                JOptionPane.showMessageDialog(this, result.toString(), "Результат", JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-        return calculateNormalsButton;
-    }
 
     private void updateAlgorithmComboBox(JComboBox<AlgorithmType> algorithmComboBox, ShapeType shapeType) {
         algorithmComboBox.removeAllItems();
