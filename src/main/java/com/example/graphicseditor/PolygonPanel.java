@@ -3,6 +3,7 @@ package com.example.graphicseditor;
 import com.example.algorithms.lb6.FloodFillAlgorithm;
 import com.example.algorithms.lb6.ScanlineFillAlgorithm;
 import com.example.algorithms.lb6.ScanlineFillWithAELAlgorithm;
+import com.example.algorithms.lb6.ScanlineFloodFillAlgorithm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,8 +52,8 @@ public class PolygonPanel extends JPanel {
                         repaint();
                     }
                 } else if (e.getButton() == MouseEvent.BUTTON1) {
-                    if (fillAlgorithmType == FillAlgorithmType.FLOOD_FILL && seedPoint == null) {
-                        seedPoint = e.getPoint();
+                    if ((fillAlgorithmType == FillAlgorithmType.FLOOD_FILL || fillAlgorithmType == FillAlgorithmType.SCANLINE_FLOOD_FILL) && seedPoint == null) {
+                        seedPoint = e.getPoint(); // Устанавливаем точку затравки
                         repaint();
                     } else {
                         polygonPoints.add(e.getPoint());
@@ -137,6 +138,15 @@ public class PolygonPanel extends JPanel {
                         return;
                     }
                     break;
+                case SCANLINE_FLOOD_FILL:
+                    if (seedPoint != null) {
+                        pixelsToFill = new ArrayList<>(ScanlineFloodFillAlgorithm.fillPolygon(lastPolygon, seedPoint));
+                        seedPoint = null;
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Выберите точку затравки!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    break;
             }
             filledPixels.clear();
             fillTimer.start();
@@ -145,5 +155,6 @@ public class PolygonPanel extends JPanel {
 
     public void setFillAlgorithmType(FillAlgorithmType fillAlgorithmType) {
         this.fillAlgorithmType = fillAlgorithmType;
+        seedPoint = null;
     }
 }
