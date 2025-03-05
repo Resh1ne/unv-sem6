@@ -1,6 +1,6 @@
 package com.example.graphicseditor;
 
-import com.example.algorithms.lb4.Matrix4x4;
+import com.example.algorithms.lb4.Matrix;
 import com.example.algorithms.lb4.Object3D;
 import com.example.algorithms.lb4.ObjectLoader;
 import com.example.algorithms.lb4.KeyboardHandler;
@@ -21,8 +21,8 @@ public class Editor3DPanel extends JPanel {
             object3D = ObjectLoader.loadFromFile("other.obj");
 
             // Начальное масштабирование и смещение объекта
-            Matrix4x4 scale = Matrix4x4.scaling(50, 50, 50); // Уменьшим начальный масштаб
-            Matrix4x4 translate = Matrix4x4.translation(0, 0, -10); // Смещаем объект вперед
+            Matrix scale = Matrix.scaling(50, 50, 50); // Уменьшим начальный масштаб
+            Matrix translate = Matrix.translation(0, 0, -10); // Смещаем объект вперед
             object3D.transform(scale.multiply(translate)); // Применяем преобразования
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Ошибка загрузки файла!", "Ошибка", JOptionPane.ERROR_MESSAGE);
@@ -38,7 +38,7 @@ public class Editor3DPanel extends JPanel {
         super.paintComponent(g);
         Graphics2D g2d = (Graphics2D) g;
         if (object3D != null) {
-            Matrix4x4 projection = Matrix4x4.perspective(60, (double) getWidth() / getHeight(), 0.1, 100);
+            Matrix projection = Matrix.perspective(60, (double) getWidth() / getHeight(), 0.1, 100);
 
             List<double[]> vertices = object3D.getVertices();
             List<int[]> faces = object3D.getFaces();

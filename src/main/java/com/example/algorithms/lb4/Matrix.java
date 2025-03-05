@@ -1,9 +1,9 @@
 package com.example.algorithms.lb4;
 
-public class Matrix4x4 {
+public class Matrix {
     private final double[][] matrix = new double[4][4];
 
-    public Matrix4x4() {
+    public Matrix() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 matrix[i][j] = (i == j) ? 1 : 0;
@@ -11,8 +11,8 @@ public class Matrix4x4 {
         }
     }
 
-    public Matrix4x4 multiply(Matrix4x4 other) {
-        Matrix4x4 result = new Matrix4x4();
+    public Matrix multiply(Matrix other) {
+        Matrix result = new Matrix();
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 result.matrix[i][j] = 0;
@@ -35,24 +35,24 @@ public class Matrix4x4 {
         return result;
     }
 
-    public static Matrix4x4 translation(double tx, double ty, double tz) {
-        Matrix4x4 m = new Matrix4x4();
+    public static Matrix translation(double tx, double ty, double tz) {
+        Matrix m = new Matrix();
         m.matrix[0][3] = tx;
         m.matrix[1][3] = ty;
         m.matrix[2][3] = tz;
         return m;
     }
 
-    public static Matrix4x4 scaling(double sx, double sy, double sz) {
-        Matrix4x4 m = new Matrix4x4();
+    public static Matrix scaling(double sx, double sy, double sz) {
+        Matrix m = new Matrix();
         m.matrix[0][0] = sx;
         m.matrix[1][1] = sy;
         m.matrix[2][2] = sz;
         return m;
     }
 
-    public static Matrix4x4 rotationX(double angle) {
-        Matrix4x4 m = new Matrix4x4();
+    public static Matrix rotationX(double angle) {
+        Matrix m = new Matrix();
         double rad = Math.toRadians(angle);
         m.matrix[1][1] = Math.cos(rad);
         m.matrix[1][2] = -Math.sin(rad);
@@ -61,8 +61,8 @@ public class Matrix4x4 {
         return m;
     }
 
-    public static Matrix4x4 rotationY(double angle) {
-        Matrix4x4 m = new Matrix4x4();
+    public static Matrix rotationY(double angle) {
+        Matrix m = new Matrix();
         double rad = Math.toRadians(angle);
         m.matrix[0][0] = Math.cos(rad);
         m.matrix[0][2] = Math.sin(rad);
@@ -71,8 +71,8 @@ public class Matrix4x4 {
         return m;
     }
 
-    public static Matrix4x4 perspective(double fov, double aspect, double near, double far) {
-        Matrix4x4 m = new Matrix4x4();
+    public static Matrix perspective(double fov, double aspect, double near, double far) {
+        Matrix m = new Matrix();
         double f = 1.0 / Math.tan(Math.toRadians(fov) / 2);
         m.matrix[0][0] = f / aspect;
         m.matrix[1][1] = f;

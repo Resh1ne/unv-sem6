@@ -16,10 +16,10 @@ public class KeyboardHandler extends KeyAdapter {
     @Override
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_W -> object.transform(Matrix4x4.translation(0, 1, 0));
-            case KeyEvent.VK_S -> object.transform(Matrix4x4.translation(0, -1, 0));
-            case KeyEvent.VK_A -> object.transform(Matrix4x4.translation(-1, 0, 0));
-            case KeyEvent.VK_D -> object.transform(Matrix4x4.translation(1, 0, 0));
+            case KeyEvent.VK_W -> object.transform(Matrix.translation(0, 1, 0));
+            case KeyEvent.VK_S -> object.transform(Matrix.translation(0, -1, 0));
+            case KeyEvent.VK_A -> object.transform(Matrix.translation(-1, 0, 0));
+            case KeyEvent.VK_D -> object.transform(Matrix.translation(1, 0, 0));
             case KeyEvent.VK_LEFT -> object.rotateY(-10);
             case KeyEvent.VK_RIGHT -> object.rotateY(10);
             case KeyEvent.VK_UP -> object.rotateX(-10);

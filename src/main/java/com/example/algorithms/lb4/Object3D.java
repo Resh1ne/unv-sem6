@@ -23,7 +23,7 @@ public class Object3D {
         return faces;
     }
 
-    public void transform(Matrix4x4 matrix) {
+    public void transform(Matrix matrix) {
         for (double[] vertex : vertices) {
             double[] transformed = matrix.transform(vertex);
             System.arraycopy(transformed, 0, vertex, 0, 4);
@@ -32,23 +32,23 @@ public class Object3D {
 
     public void rotateY(double angle) {
         double[] center = findCenter();
-        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
-        transform(Matrix4x4.rotationY(angle));
-        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+        transform(Matrix.translation(-center[0], -center[1], -center[2]));
+        transform(Matrix.rotationY(angle));
+        transform(Matrix.translation(center[0], center[1], center[2]));
     }
 
     public void rotateX(double angle) {
         double[] center = findCenter();
-        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
-        transform(Matrix4x4.rotationX(angle));
-        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+        transform(Matrix.translation(-center[0], -center[1], -center[2]));
+        transform(Matrix.rotationX(angle));
+        transform(Matrix.translation(center[0], center[1], center[2]));
     }
 
     public void scale(double factor) {
         double[] center = findCenter();
-        transform(Matrix4x4.translation(-center[0], -center[1], -center[2]));
-        transform(Matrix4x4.scaling(factor, factor, factor));
-        transform(Matrix4x4.translation(center[0], center[1], center[2]));
+        transform(Matrix.translation(-center[0], -center[1], -center[2]));
+        transform(Matrix.scaling(factor, factor, factor));
+        transform(Matrix.translation(center[0], center[1], center[2]));
     }
 
     private double[] findCenter() {
