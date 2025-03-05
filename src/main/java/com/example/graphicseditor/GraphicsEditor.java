@@ -27,6 +27,7 @@ public class GraphicsEditor extends JFrame {
         JToolBar toolBar = new JToolBar();
         JComboBox<ShapeType> shapeComboBox = new JComboBox<>(ShapeType.values());
         JComboBox<AlgorithmType> algorithmComboBox = new JComboBox<>(AlgorithmType.values());
+        JComboBox<FillAlgorithmType> fillAlgorithmComboBox = new JComboBox<>(FillAlgorithmType.values());
 
         shapeComboBox.addActionListener(e -> {
             ShapeType selectedShape = (ShapeType) shapeComboBox.getSelectedItem();
@@ -42,11 +43,16 @@ public class GraphicsEditor extends JFrame {
             debugPanel.setAlgorithmType(selectedAlgorithm);
         });
 
-
+        fillAlgorithmComboBox.addActionListener(e -> {
+            FillAlgorithmType selectedFillAlgorithm = (FillAlgorithmType) fillAlgorithmComboBox.getSelectedItem();
+            polygonPanel.setFillAlgorithmType(selectedFillAlgorithm);
+        });
         toolBar.add(new JLabel("Фигура: "));
         toolBar.add(shapeComboBox);
         toolBar.add(new JLabel("Алгоритм: "));
         toolBar.add(algorithmComboBox);
+        toolBar.add(new JLabel("Алгоритм заливки: "));
+        toolBar.add(fillAlgorithmComboBox);
 
         add(toolBar, BorderLayout.NORTH);
 
@@ -56,7 +62,6 @@ public class GraphicsEditor extends JFrame {
             }
         });
     }
-
 
     private void updateAlgorithmComboBox(JComboBox<AlgorithmType> algorithmComboBox, ShapeType shapeType) {
         algorithmComboBox.removeAllItems();

@@ -1,6 +1,7 @@
 package com.example.graphicseditor;
 
 import com.example.algorithms.lb6.ScanlineFillAlgorithm;
+import com.example.algorithms.lb6.ScanlineFillWithAELAlgorithm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,7 +18,7 @@ public class PolygonPanel extends JPanel {
     private final List<Point> filledPixels = new ArrayList<>();
     private final Timer fillTimer;
     private List<Point> pixelsToFill;
-
+    private FillAlgorithmType fillAlgorithmType = FillAlgorithmType.SCANLINE_FILL;
     public PolygonPanel() {
         setBackground(Color.WHITE);
 
@@ -107,9 +108,20 @@ public class PolygonPanel extends JPanel {
     private void startFillAnimation() {
         if (!allPolygons.isEmpty()) {
             List<Point> lastPolygon = allPolygons.get(allPolygons.size() - 1);
-            pixelsToFill = new ArrayList<>(ScanlineFillAlgorithm.fillPolygon(lastPolygon));
+            switch (fillAlgorithmType) {
+                case SCANLINE_FILL:
+                    pixelsToFill = new ArrayList<>(ScanlineFillAlgorithm.fillPolygon(lastPolygon));
+                    break;
+                case SCANLINE_FILL_WITH_AEL:
+                    pixelsToFill = new ArrayList<>(ScanlineFillWithAELAlgorithm.fillPolygon(lastPolygon));
+                    break;
+            }
             filledPixels.clear();
             fillTimer.start();
         }
+    }
+
+    public void setFillAlgorithmType(FillAlgorithmType fillAlgorithmType) {
+        this.fillAlgorithmType = fillAlgorithmType;
     }
 }
