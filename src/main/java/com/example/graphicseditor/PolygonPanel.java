@@ -1,5 +1,6 @@
 package com.example.graphicseditor;
 
+import com.example.algorithms.lb6.FloodFillAlgorithm;
 import com.example.algorithms.lb6.ScanlineFillAlgorithm;
 import com.example.algorithms.lb6.ScanlineFillWithAELAlgorithm;
 
@@ -19,6 +20,8 @@ public class PolygonPanel extends JPanel {
     private final Timer fillTimer;
     private List<Point> pixelsToFill;
     private FillAlgorithmType fillAlgorithmType = FillAlgorithmType.SCANLINE_FILL;
+    private Point seedPoint;
+
     public PolygonPanel() {
         setBackground(Color.WHITE);
 
@@ -48,8 +51,13 @@ public class PolygonPanel extends JPanel {
                         repaint();
                     }
                 } else if (e.getButton() == MouseEvent.BUTTON1) {
-                    polygonPoints.add(e.getPoint());
-                    repaint();
+                    if (fillAlgorithmType == FillAlgorithmType.FLOOD_FILL && seedPoint == null) {
+                        seedPoint = e.getPoint();
+                        repaint();
+                    } else {
+                        polygonPoints.add(e.getPoint());
+                        repaint();
+                    }
                 }
             }
         });
@@ -89,6 +97,11 @@ public class PolygonPanel extends JPanel {
         for (Point p : filledPixels) {
             g2d.fillRect(p.x, p.y, 1, 1);
         }
+
+        if (seedPoint != null) {
+            g2d.setColor(Color.RED);
+            g2d.fillOval(seedPoint.x - 2, seedPoint.y - 2, 4, 4);
+        }
     }
 
     private void drawPolygon(Graphics2D g2d, List<Point> polygon) {
@@ -114,6 +127,15 @@ public class PolygonPanel extends JPanel {
                     break;
                 case SCANLINE_FILL_WITH_AEL:
                     pixelsToFill = new ArrayList<>(ScanlineFillWithAELAlgorithm.fillPolygon(lastPolygon));
+                    break;
+                case FLOOD_FILL:
+                    if (seedPoint != null) {
+                        pixelsToFill = new ArrayList<>(FloodFillAlgorithm.fillPolygon(lastPolygon, seedPoint));
+                        seedPoint = null;
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Выберите точку затравки!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                     break;
             }
             filledPixels.clear();
