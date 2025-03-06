@@ -1,341 +1,171 @@
-# Лабораторная работа №6
+# Лабораторная работа №7
 ## Цель
-Целью данной лабораторной работы является разработка элементарного графического редактора, который позволяет выполнять построение полигонов и их заполнение с использованием различных алгоритмов растровой развертки и заполнения с затравкой. Программа должна поддерживать режим отладки для визуализации пошагового выполнения алгоритмов.
+Целью данной лабораторной работы является разработка графической программы, которая выполняет триангуляцию Делоне и строит диаграмму Вороного по заданному набору точек.
 ## Алгоритмы
-### Алгоритм растровой развертки с упорядоченным списком рёбер
-Сначала строится список рёбер (Edge Table, ET), отсортированный по y-координате нижнего конца рёбер.
-
-Каждое ребро содержит:
-- Верхнюю и нижнюю y-координаты,
-- x-координату начальной точки,
-- Обратную величину наклона (dx/dy).
-- 
-Далее выполняется проход построчно, начиная от минимального y к максимальному:
-1. Добавляются рёбра из списка, если их нижний конец достигнут.
-2. Удаляются рёбра, если их верхний конец достигнут.
-3. Сортируется текущий список активных рёбер.
-4. Выполняется заливка между парами пересечений.
-5. x-координаты рёбер обновляются (x += dx/dy).
-### Алгоритм растровой развертки с использованием списка активных рёбер
-Вместо хранения всех рёбер сразу, ведётся только список активных рёбер.
-
-Алгоритм работы:
-1. Рёбра, начинающиеся на текущей строке, добавляются в AET.
-2. Все рёбра, у которых ymax совпадает с текущим y, удаляются.
-3. В AET рёбра сортируются по x-координате.
-4. Выполняется заливка между парами пересечений.
-5. Обновляются x-координаты активных рёбер (x += dx/dy).
-6. Повторяется, пока не будет обработан весь многоугольник.
-Этот метод динамически обновляет список активных рёбер, что делает его эффективным.
-### Простой алгоритм заполнения с затравкой
-Применяется для заливки замкнутых областей.
-
-Выбирается затравочная точка внутри области. Затем рекурсивно или с помощью стека проверяются соседние пиксели:
-- Если они имеют исходный цвет, то перекрашиваются в новый.
-- Для каждого изменённого пикселя проверяются его соседи.
-- Алгоритм продолжается, пока вся область не будет закрашена.
-  
-Недостатки:
-- Рекурсивный вариант может привести к переполнению стека.
-- Медленно работает на сложных формах.
-### Построчный алгоритм заполнения с затравкой
-Оптимизированная версия Flood Fill, использующая построчную заливку.
-
-Алгоритм работы:
-1. Выбирается затравочная точка.
-2. Определяется горизонтальный отрезок пикселей в этой строке, который можно закрасить (до границы).
-3. Заполняется найденный отрезок.
-4. В стек добавляются затравочные точки соседних строк (над и под текущей).
-5. Повторяется, пока не будут обработаны все пиксели.
-
-Преимущества:
-- Избегает переполнения стека.
-- Работает быстрее обычного Flood Fill.
+### Триангуляция Делоне
+Триангуляция Делоне — это разбиение множества точек на плоскости на треугольники таким образом, что ни одна точка не попадает внутрь описанной окружности любого треугольника. Это обеспечивает максимальную равномерность треугольников и минимизирует "острые" углы.
+### Диаграмма Вороного
+Диаграмма Вороного — это разбиение плоскости на области (ячейки), где каждая ячейка соответствует одной точке из заданного множества. Все точки внутри ячейки ближе к соответствующей точке, чем к любой другой точке из множества.
 ## Интерфейс
-![image](https://github.com/user-attachments/assets/db9305bb-5c4d-49f4-815f-d31466de0fe6)
+![image](https://github.com/user-attachments/assets/a2581ade-bdfd-462c-9ac9-c5cf197ab86e)
+
+![image](https://github.com/user-attachments/assets/6ddf2086-ae0b-4b58-88ed-4ec4efe3e432)
 
 ## Реализация
-### Алгоритм растровой развертки с упорядоченным списком рёбер
+### Триангуляция Делоне
 ```
-public class ScanlineFillAlgorithm {
-    public static List<Point> fillPolygon(List<Point> polygon) {
-        List<Point> filledPixels = new ArrayList<>();
+public class Triangulation {
+    private List<Triangle> triangles;
 
-        if (polygon.size() < 3) {
-            return filledPixels;
+    public Triangulation(List<Pixel> points) {
+        triangles = new ArrayList<>();
+        performTriangulation(points);
+    }
+
+    private void performTriangulation(List<Pixel> points) {
+        int minX = Integer.MAX_VALUE, minY = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE, maxY = Integer.MIN_VALUE;
+
+        for (Pixel p : points) {
+            minX = Math.min(minX, p.getX());
+            minY = Math.min(minY, p.getY());
+            maxX = Math.max(maxX, p.getX());
+            maxY = Math.max(maxY, p.getY());
         }
 
-        int minY = polygon.get(0).y;
-        int maxY = polygon.get(0).y;
-        for (Point p : polygon) {
-            if (p.y < minY) minY = p.y;
-            if (p.y > maxY) maxY = p.y;
-        }
+        int dx = maxX - minX;
+        int dy = maxY - minY;
+        int deltaMax = Math.max(dx, dy) * 10;
 
-        List<Edge> edges = new ArrayList<>();
-        for (int i = 0; i < polygon.size(); i++) {
-            Point p1 = polygon.get(i);
-            Point p2 = polygon.get((i + 1) % polygon.size());
+        Pixel p1 = new Pixel(minX - deltaMax, minY - deltaMax);
+        Pixel p2 = new Pixel(minX + deltaMax, minY - deltaMax);
+        Pixel p3 = new Pixel(minX, minY + deltaMax * 2);
 
-            if (p1.y != p2.y) {
-                Edge edge = new Edge(p1, p2);
-                edges.add(edge);
+        Triangle superTriangle = new Triangle(p1, p2, p3);
+        triangles.add(superTriangle);
+
+        for (Pixel p : points) {
+            List<Triangle> badTriangles = new ArrayList<>();
+            List<Edge> edges = new ArrayList<>();
+
+            for (Triangle t : triangles) {
+                if (t.containsInCircumcircle(p)) {
+                    badTriangles.add(t);
+                    edges.addAll(t.getEdges());
+                }
             }
-        }
 
-        for (int y = minY; y <= maxY; y++) {
-            List<Integer> intersections = new ArrayList<>();
+            triangles.removeAll(badTriangles);
+
+            edges = removeDuplicateEdges(edges);
 
             for (Edge edge : edges) {
-                if (y >= edge.minY && y < edge.maxY) {
-                    int x = (int) (edge.x + (y - edge.y1) * edge.slope);
-                    intersections.add(x);
-                }
-            }
-
-            Collections.sort(intersections);
-
-            for (int i = 0; i < intersections.size(); i += 2) {
-                int xStart = intersections.get(i);
-                int xEnd = intersections.get(i + 1);
-
-                for (int x = xStart; x <= xEnd; x++) {
-                    filledPixels.add(new Point(x, y));
-                }
+                triangles.add(new Triangle(edge.getA(), edge.getB(), p));
             }
         }
 
-        return filledPixels;
+        triangles.removeIf(t -> t.hasVertex(p1) || t.hasVertex(p2) || t.hasVertex(p3));
     }
 
-    private static class Edge {
-        int y1, y2;
-        int x;
-        double slope;
-        int minY, maxY;
+    private List<Edge> removeDuplicateEdges(List<Edge> edges) {
+        Map<Edge, Integer> edgeCount = new HashMap<>();
 
-        public Edge(Point p1, Point p2) {
-            if (p1.y < p2.y) {
-                y1 = p1.y;
-                y2 = p2.y;
-                x = p1.x;
-            } else {
-                y1 = p2.y;
-                y2 = p1.y;
-                x = p2.x;
-            }
-            minY = y1;
-            maxY = y2;
-            slope = (double) (p2.x - p1.x) / (p2.y - p1.y);
+        for (Edge edge : edges) {
+            edgeCount.put(edge, edgeCount.getOrDefault(edge, 0) + 1);
         }
+
+        List<Edge> uniqueEdges = new ArrayList<>();
+        for (Map.Entry<Edge, Integer> entry : edgeCount.entrySet()) {
+            if (entry.getValue() == 1) {
+                uniqueEdges.add(entry.getKey());
+            }
+        }
+
+        return uniqueEdges;
     }
+
 }
 ```
-### Алгоритм растровой развертки с использованием списка активных рёбер
+### Диаграмма Вороного
 ```
-public class ScanlineFillWithAELAlgorithm {
-
-    public static List<Point> fillPolygon(List<Point> polygon) {
-        List<Point> filledPixels = new ArrayList<>();
-
-        if (polygon.isEmpty()) {
-            return filledPixels;
-        }
-
-        int yMin = Integer.MAX_VALUE;
-        int yMax = Integer.MIN_VALUE;
-        for (Point p : polygon) {
-            if (p.y < yMin) yMin = p.y;
-            if (p.y > yMax) yMax = p.y;
-        }
-
-        Map<Integer, List<Edge>> edgeTable = new HashMap<>();
-        for (int i = 0; i < polygon.size(); i++) {
-            Point p1 = polygon.get(i);
-            Point p2 = polygon.get((i + 1) % polygon.size());
-
-            if (p1.y == p2.y) continue;
-
-            Edge edge = new Edge(Math.max(p1.y, p2.y), p1.y < p2.y ? p1.x : p2.x, (float) (p2.x - p1.x) / (p2.y - p1.y));
-            int yStart = Math.min(p1.y, p2.y);
-
-            if (!edgeTable.containsKey(yStart)) {
-                edgeTable.put(yStart, new ArrayList<>());
+public class VoronoiDiagram {
+    public List<LineSegment> getVoronoiEdges(List<Triangle> triangles, Rectangle boundingBox) {
+        Map<Edge, List<Triangle>> edgeTriangleMap = new HashMap<>();
+        for (Triangle t : triangles) {
+            for (Edge edge : t.getEdges()) {
+                edgeTriangleMap.computeIfAbsent(edge, k -> new ArrayList<>()).add(t);
             }
-            edgeTable.get(yStart).add(edge);
         }
 
-        List<Edge> activeEdges = new ArrayList<>();
+        List<LineSegment> voronoiEdges = new ArrayList<>();
 
-        for (int y = yMin; y <= yMax; y++) {
-            if (edgeTable.containsKey(y)) {
-                activeEdges.addAll(edgeTable.get(y));
-            }
+        for (Map.Entry<Edge, List<Triangle>> entry : edgeTriangleMap.entrySet()) {
+            List<Triangle> adjacentTriangles = entry.getValue();
+            if (adjacentTriangles.size() == 2) {
+                Pixel cc1 = adjacentTriangles.get(0).getCircumcenter();
+                Pixel cc2 = adjacentTriangles.get(1).getCircumcenter();
+                voronoiEdges.add(new LineSegment(cc1, cc2));
+            } else if (adjacentTriangles.size() == 1) {
+                Triangle t = adjacentTriangles.get(0);
+                Pixel cc = t.getCircumcenter();
 
-            int finalY = y;
-            activeEdges.removeIf(edge -> edge.yMax <= finalY);
+                Pixel p1 = entry.getKey().getA();
+                Pixel p2 = entry.getKey().getB();
 
-            activeEdges.sort(Comparator.comparing(edge -> edge.x));
+                double ex = p2.getX() - p1.getX();
+                double ey = p2.getY() - p1.getY();
 
-            for (int i = 0; i < activeEdges.size(); i += 2) {
-                int xStart = (int) Math.ceil(activeEdges.get(i).x);
-                int xEnd = (int) Math.floor(activeEdges.get(i + 1).x);
+                double cand1X = -ey;
+                double cand2Y = -ex;
 
-                for (int x = xStart; x <= xEnd; x++) {
-                    filledPixels.add(new Point(x, y));
+                Pixel p3 = t.getThirdVertex(entry.getKey());
+                double dot1 = cand1X * (p3.getX() - cc.getX()) + ex * (p3.getY() - cc.getY());
+                double dot2 = ey * (p3.getX() - cc.getX()) + cand2Y * (p3.getY() - cc.getY());
+                double chosenDx, chosenDy;
+                if (dot1 < dot2) {
+                    chosenDx = cand1X;
+                    chosenDy = ex;
+                } else {
+                    chosenDx = ey;
+                    chosenDy = cand2Y;
                 }
-            }
-
-            for (Edge edge : activeEdges) {
-                edge.x += edge.slope;
-            }
-        }
-
-        return filledPixels;
-    }
-}
-```
-### Простой алгоритм заполнения с затравкой
-```
-public class FloodFillAlgorithm {
-
-    public static List<Point> fillPolygon(List<Point> polygon, Point seed) {
-        List<Point> filledPixels = new ArrayList<>();
-        if (polygon.isEmpty() || seed == null) {
-            return filledPixels;
-        }
-
-        int xMin = Integer.MAX_VALUE, xMax = Integer.MIN_VALUE;
-        int yMin = Integer.MAX_VALUE, yMax = Integer.MIN_VALUE;
-        for (Point p : polygon) {
-            if (p.x < xMin) xMin = p.x;
-            if (p.x > xMax) xMax = p.x;
-            if (p.y < yMin) yMin = p.y;
-            if (p.y > yMax) yMax = p.y;
-        }
-
-        boolean[][] visited = new boolean[yMax - yMin + 1][xMax - xMin + 1];
-
-        Stack<Point> stack = new Stack<>();
-        stack.push(seed);
-
-        while (!stack.isEmpty()) {
-            Point current = stack.pop();
-            int x = current.x;
-            int y = current.y;
-
-            if (x >= xMin && x <= xMax && y >= yMin && y <= yMax && !visited[y - yMin][x - xMin]) {
-                if (isPointInsidePolygon(polygon, current)) {
-                    visited[y - yMin][x - xMin] = true;
-                    filledPixels.add(new Point(x, y));
-
-                    stack.push(new Point(x + 1, y));
-                    stack.push(new Point(x - 1, y));
-                    stack.push(new Point(x, y + 1));
-                    stack.push(new Point(x, y - 1));
+                double len = sqrt(chosenDx * chosenDx + chosenDy * chosenDy);
+                if (len != 0) {
+                    chosenDx /= len;
+                    chosenDy /= len;
                 }
+                Pixel ccExtended = intersectRayWithRectangle(cc, chosenDx, chosenDy, boundingBox);
+                voronoiEdges.add(new LineSegment(cc, ccExtended));
             }
         }
-
-        return filledPixels;
+        return voronoiEdges;
     }
 
-    private static boolean isPointInsidePolygon(List<Point> polygon, Point point) {
-        int intersections = 0;
-        int n = polygon.size();
+    private Pixel intersectRayWithRectangle(Pixel origin, double dx, double dy, Rectangle rect) {
+        double xMin = rect.getX();
+        double yMin = rect.getY();
+        double xMax = rect.getX() + rect.getWidth();
+        double yMax = rect.getY() + rect.getHeight();
+        double tMin = Double.MAX_VALUE;
 
-        for (int i = 0; i < n; i++) {
-            Point p1 = polygon.get(i);
-            Point p2 = polygon.get((i + 1) % n);
-
-            if (p1.y == p2.y) continue;
-
-            if (point.y > Math.min(p1.y, p2.y) && point.y <= Math.max(p1.y, p2.y)) {
-                double xIntersection = (double) ((point.y - p1.y) * (p2.x - p1.x)) / (p2.y - p1.y) + p1.x;
-
-                if (p1.x == p2.x || point.x <= xIntersection) {
-                    intersections++;
-                }
-            }
+        if (dx != 0) {
+            double t1 = (xMin - origin.getX()) / dx;
+            double t2 = (xMax - origin.getX()) / dx;
+            if (t1 > 0) tMin = min(tMin, t1);
+            if (t2 > 0) tMin = min(tMin, t2);
         }
-
-        return intersections % 2 != 0;
-    }
-}
-```
-### Построчный алгоритм заполнения с затравкой
-```
-public class ScanlineFillAlgorithm {
-    public static List<Point> fillPolygon(List<Point> polygon) {
-        List<Point> filledPixels = new ArrayList<>();
-
-        if (polygon.size() < 3) {
-            return filledPixels;
+        if (dy != 0) {
+            double t3 = (yMin - origin.getY()) / dy;
+            double t4 = (yMax - origin.getY()) / dy;
+            if (t3 > 0) tMin = min(tMin, t3);
+            if (t4 > 0) tMin = min(tMin, t4);
         }
-
-        int minY = polygon.get(0).y;
-        int maxY = polygon.get(0).y;
-        for (Point p : polygon) {
-            if (p.y < minY) minY = p.y;
-            if (p.y > maxY) maxY = p.y;
+        if (tMin == Double.MAX_VALUE) {
+            return origin;
         }
-
-        List<Edge> edges = new ArrayList<>();
-        for (int i = 0; i < polygon.size(); i++) {
-            Point p1 = polygon.get(i);
-            Point p2 = polygon.get((i + 1) % polygon.size());
-
-            if (p1.y != p2.y) {
-                Edge edge = new Edge(p1, p2);
-                edges.add(edge);
-            }
-        }
-
-        for (int y = minY; y <= maxY; y++) {
-            List<Integer> intersections = new ArrayList<>();
-
-            for (Edge edge : edges) {
-                if (y >= edge.minY && y < edge.maxY) {
-                    int x = (int) (edge.x + (y - edge.y1) * edge.slope);
-                    intersections.add(x);
-                }
-            }
-
-            Collections.sort(intersections);
-
-            for (int i = 0; i < intersections.size(); i += 2) {
-                int xStart = intersections.get(i);
-                int xEnd = intersections.get(i + 1);
-
-                for (int x = xStart; x <= xEnd; x++) {
-                    filledPixels.add(new Point(x, y));
-                }
-            }
-        }
-
-        return filledPixels;
-    }
-
-    private static class Edge {
-        int y1, y2;
-        int x;
-        double slope;
-        int minY, maxY;
-
-        public Edge(Point p1, Point p2) {
-            if (p1.y < p2.y) {
-                y1 = p1.y;
-                y2 = p2.y;
-                x = p1.x;
-            } else {
-                y1 = p2.y;
-                y2 = p1.y;
-                x = p2.x;
-            }
-            minY = y1;
-            maxY = y2;
-            slope = (double) (p2.x - p1.x) / (p2.y - p1.y);
-        }
+        int ix = (int) Math.round(origin.getX() + dx * tMin);
+        int iy = (int) Math.round(origin.getY() + dy * tMin);
+        return new Pixel(ix, iy);
     }
 }
 ```
@@ -344,4 +174,4 @@ public class ScanlineFillAlgorithm {
 - JavaFX
 - Maven
 ## Вывод
-В ходе выполнения лабораторной работы был разработан элементарный графический редактор, который позволяет выполнять построение полигонов и их заполнение с использованием различных алгоритмов растровой развертки и заполнения с затравкой. Программа поддерживает режим отладки, что позволяет визуализировать пошаговое выполнение алгоритмов. Реализованные алгоритмы работают корректно и позволяют эффективно решать поставленные задачи.
+В ходе выполнения лабораторной работы была разработана программа, которая успешно выполняет триангуляцию Делоне и строит диаграмму Вороного для заданного набора точек. Это позволило на практике изучить и применить методы вычислительной геометрии, что является важным навыком для решения задач, связанных с анализом и визуализацией данных.
