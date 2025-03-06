@@ -16,11 +16,13 @@ public class GraphicsEditor extends JFrame {
         DebugPanel debugPanel = new DebugPanel();
         Editor3DPanel editor3DPanel = new Editor3DPanel();
         PolygonPanel polygonPanel = new PolygonPanel();
+        VoronoiDelaunayPanel voronoiDelaunayPanel = new VoronoiDelaunayPanel();
 
         mainTabbedPane.addTab("Редактор 2D", editorPanel);
         mainTabbedPane.addTab("Отладка", debugPanel);
         mainTabbedPane.addTab("Редактор 3D", editor3DPanel);
         mainTabbedPane.addTab("Построение полигонов", polygonPanel);
+        mainTabbedPane.addTab("Вороного/Делоне", voronoiDelaunayPanel);
 
         add(mainTabbedPane);
 
