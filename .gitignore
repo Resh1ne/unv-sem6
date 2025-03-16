@@ -1,56 +1,64 @@
-# IntelliJ IDEA specific files
+# Игнорирование папки проекта PyCharm
 .idea/
-*.iws
-*.iml
-*.ipr
 
-# Ignore project-specific configuration
-/out/
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/shelf/
-/.idea/libraries/
+# Кеши Python
+__pycache__/
+*.py[cod]
+*$py.class
 
-# Ignore build artifacts
-/target/
-/build/
-/dist/
+# Виртуальное окружение
+venv/
+env/
+*.venv
+*.env
 
-# Ignore logs and temp files
+# Логи и временные файлы
 *.log
 *.tmp
-hs_err_pid*
+*.bak
+*.swp
+*.swo
+*.swn
 
-# Ignore compiled Java classes
-*.class
-*.jar
-*.war
-*.ear
-*.dll
-*.exe
-*.so
-*.dylib
-*.nupkg
+# Файлы зависимостей и окружения
+pip-log.txt
+pip-delete-this-directory.txt
+poetry.lock
 
-# Ignore Maven & Gradle specific files
-/.mvn/
-/.gradle/
-/build/
-**/build/
-!gradle/wrapper/gradle-wrapper.jar
+# Файлы IDE
+*.iml
+*.ipr
+*.iws
 
-# Ignore dependency caches
-**/node_modules/
-**/.cache/
-/.npm/
-/.yarn-cache/
-/.yarn/
-/.pnp/
+# Jupyter Notebook временные файлы
+.ipynb_checkpoints/
 
-# Ignore database files
+# Базы данных
+*.sqlite3
 *.db
-*.sqlite
 
-# Ignore OS-specific files
-.DS_Store
-Thumbs.db
+# Кэшированные файлы тестов
+.pytest_cache/
+nosetests.xml
+coverage.xml
+htmlcov/
+
+# Сборочные артефакты
+build/
+dist/
+*.egg-info/
+.installed.cfg
+
+# Docker и виртуальные машины
+.vagrant/
+*.vbox
+*.vbox-prev
+*.vdi
+.dockerignore
+
+# Конфигурации среды
+.env
+.env.local
+.env.development
+.env.production
+.env.test
