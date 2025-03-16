@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, scrolledtext, messagebox
-from text_processor import process_text
+from text_processor import TextProcessor
 
 
 def open_file(text_area):
@@ -9,7 +9,7 @@ def open_file(text_area):
         try:
             with open(file_path, 'r', encoding='utf-8') as file:
                 content = file.read()
-            analyzed_words = process_text(content)
+            analyzed_words = TextProcessor.process_text(content)
             result = format_result(analyzed_words)
             text_area.delete(1.0, tk.END)
             text_area.insert(tk.END, result)
@@ -24,6 +24,7 @@ def format_result(analyzed_words):
             f"Слово: {info['word']}\n"
             f"Часть речи: {info['part_of_speech']}\n"
             f"Роль в предложении: {info['role']}\n"
+            # f"Морфологические признаки: {info['morphological_features']}\n"
             f"{'-' * 30}\n"
         )
     return result
