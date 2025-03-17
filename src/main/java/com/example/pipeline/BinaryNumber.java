@@ -4,6 +4,9 @@ public class BinaryNumber {
     private final String binaryString;
 
     public BinaryNumber(String binaryString) {
+        if (binaryString.length() < 5) {
+            binaryString = String.format("%5s", binaryString).replace(' ', '0');
+        }
         if (binaryString.length() != 5) {
             throw new IllegalArgumentException("Длина строки должна быть равна 5 (знаковый бит + 4 бита)");
         }
@@ -36,7 +39,7 @@ public class BinaryNumber {
 
     public static BinaryNumber fromDecimal(int decimal) {
         if (decimal < -15 || decimal > 15) {
-            throw new IllegalArgumentException("Число должно быть в диапазоне от -15 до 15");
+            throw new IllegalArgumentException("Число должно быть до 15");
         }
 
         boolean isNegative = decimal < 0;
