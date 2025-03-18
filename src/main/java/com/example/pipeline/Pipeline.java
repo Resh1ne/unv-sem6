@@ -1,3 +1,9 @@
+//Лабораторная работа №1 по дисциплине Модели решения задач в интеллектуальных системах
+//Вариант 5. Алгоритм вычисления целочисленного частного пары 4-разрядных чисел делением с восстановлением остатка
+//Выполена студентом группы 221702 БГУИР Потоцкий Даниил Александрович
+//Код описывает конвеер
+//17.03.2025
+
 package com.example.pipeline;
 
 import java.util.ArrayDeque;
@@ -25,26 +31,21 @@ public class Pipeline {
     }
 
     public void tick() {
-        // Если последний шаг завершил вычисления, перемещаем его в output и очищаем шаг
         if (steps[steps.length - 1] != null && steps[steps.length - 1].isFinished()) {
-            output.addLast(steps[steps.length - 1]); // Перемещаем в выходную очередь
-            steps[steps.length - 1] = null; // Явно очищаем последний шаг
+            output.addLast(steps[steps.length - 1]);
+            steps[steps.length - 1] = null;
         }
 
-        // Сдвигаем шаги вправо
         for (int i = steps.length - 1; i > 0; i--) {
             steps[i] = steps[i - 1];
         }
 
-        // Очищаем первый шаг после сдвига
         steps[0] = null;
 
-        // Перемещаем объект из input в первый шаг, если input не пуст
         if (!input.isEmpty()) {
             steps[0] = input.removeFirst();
         }
 
-        // Выполняем вычисления для каждого шага
         for (int i = steps.length - 1; i >= 0; i--) {
             if (steps[i] != null) {
                 steps[i].execute();
@@ -83,6 +84,7 @@ public class Pipeline {
         System.out.print("Нажмите Enter для продолжения: ");
         try {
             System.in.read();
+            System.in.skip(System.in.available());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -116,15 +118,15 @@ public class Pipeline {
     }
 
     public static void main(String[] args) {
-        Pipeline pipeline = new Pipeline(4, 4);
+        Pipeline pipeline = new Pipeline(6, 4);
 
-        // Добавляем входные данные
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(12), BinaryNumber.fromDecimal(3)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(15), BinaryNumber.fromDecimal(1)));
         pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(14), BinaryNumber.fromDecimal(2)));
         pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(13), BinaryNumber.fromDecimal(3)));
         pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(12), BinaryNumber.fromDecimal(4)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(11), BinaryNumber.fromDecimal(5)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(10), BinaryNumber.fromDecimal(6)));
 
-        // Запускаем конвейер
         pipeline.run();
     }
 }

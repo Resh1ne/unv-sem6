@@ -1,3 +1,9 @@
+//Лабораторная работа №1 по дисциплине Модели решения задач в интеллектуальных системах
+//Вариант 5. Алгоритм вычисления целочисленного частного пары 4-разрядных чисел делением с восстановлением остатка
+//Выполена студентом группы 221702 БГУИР Потоцкий Даниил Александрович
+//Код описывает двоичное число
+//17.03.2025
+
 package com.example.pipeline;
 
 public class BinaryNumber {
@@ -93,28 +99,5 @@ public class BinaryNumber {
 
     public BinaryNumber diff(BinaryNumber other) {
         return sum(new BinaryNumber(other.toTwosComplement()));
-    }
-
-    public static void main(String[] args) {
-        BinaryNumber number = BinaryNumber.fromDecimal(-14);
-
-        System.out.println("Двоичное представление: " + number.toBinaryString());
-        System.out.println("Знаковый бит: " + (number.isNegative() ? "Отрицательное" : "Положительное"));
-        System.out.println("Биты числа: " + number.getBits());
-        System.out.println("Десятичное значение: " + number.toDecimal());
-        System.out.println("Дополнительный код: " + number.toTwosComplement());
-        System.out.println("================");
-        BinaryNumber number2 = BinaryNumber.fromDecimal(3);
-        System.out.println("Двоичное представление: " + number2.toBinaryString());
-        System.out.println("Десятичное значение: " + number2.toDecimal());
-        System.out.println("Дополнительный код: " + number2.toTwosComplement());
-        System.out.println("================");
-        System.out.println("Первое число: " + number.toBinaryString() + " (десятичное: " + number.toDecimal() + ")");
-        System.out.println("Второе число: " + number2.toBinaryString() + " (десятичное: " + number2.toDecimal() + ")");
-        BinaryNumber sum = number.sum(number2);
-        System.out.println("Результат сложения: " + sum.toBinaryString() + " (десятичное: " + sum.toDecimal() + ")");
-        System.out.println("================");
-        BinaryNumber diff = number.diff(number2);
-        System.out.println("Результат разности: " + diff.toBinaryString() + " (десятичное: " + diff.toDecimal() + ")");
     }
 }
