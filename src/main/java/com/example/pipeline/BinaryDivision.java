@@ -22,10 +22,6 @@ public class BinaryDivision {
     }
 
     public void execute() {
-        if (divisor.toDecimal() == 0) {
-            throw new ArithmeticException("Деление на ноль");
-        }
-
         if (iteration >= 4) {
             return;
         }

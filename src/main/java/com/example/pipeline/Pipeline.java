@@ -14,12 +14,14 @@ public class Pipeline {
     private final Deque<BinaryDivision> input;
     private final BinaryDivision[] steps;
     private final Deque<BinaryDivision> output;
+    private int tickCount;
 
     public Pipeline(int itemsSize, int stepsCount) {
         this.itemsSize = itemsSize;
         this.input = new ArrayDeque<>();
         this.steps = new BinaryDivision[stepsCount];
         this.output = new ArrayDeque<>();
+        this.tickCount = 0;
     }
 
     public void addInput(BinaryDivision item) {
@@ -31,6 +33,7 @@ public class Pipeline {
     }
 
     public void tick() {
+        tickCount++;
         if (steps[steps.length - 1] != null && steps[steps.length - 1].isFinished()) {
             output.addLast(steps[steps.length - 1]);
             steps[steps.length - 1] = null;
@@ -81,6 +84,8 @@ public class Pipeline {
             System.out.println("-");
         }
 
+        System.out.printf("Количество тактов: %d%n", tickCount);
+
         System.out.print("Нажмите Enter для продолжения: ");
         try {
             System.in.read();
@@ -118,14 +123,12 @@ public class Pipeline {
     }
 
     public static void main(String[] args) {
-        Pipeline pipeline = new Pipeline(6, 4);
+        Pipeline pipeline = new Pipeline(4, 4);
 
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(15), BinaryNumber.fromDecimal(1)));
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(14), BinaryNumber.fromDecimal(2)));
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(13), BinaryNumber.fromDecimal(3)));
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(12), BinaryNumber.fromDecimal(4)));
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(11), BinaryNumber.fromDecimal(5)));
-        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(10), BinaryNumber.fromDecimal(6)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(0), BinaryNumber.fromDecimal(0)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(1), BinaryNumber.fromDecimal(0)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(2), BinaryNumber.fromDecimal(0)));
+        pipeline.addInput(new BinaryDivision(BinaryNumber.fromDecimal(15), BinaryNumber.fromDecimal(0)));
 
         pipeline.run();
     }
