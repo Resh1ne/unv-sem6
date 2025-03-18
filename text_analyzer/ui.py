@@ -21,11 +21,12 @@ def format_result(analyzed_words):
     result = "Список слов с информацией:\n\n"
     for info in analyzed_words:
         result += (
-            f"Слово: {info['word']}\n"
-            f"Часть речи: {info['part_of_speech']}\n"
-            f"Роль в предложении: {info['role']}\n"
-            # f"Морфологические признаки: {info['morphological_features']}\n"
-            f"{'-' * 30}\n"
+            f"🔹 Слово: {info['word']}\n"
+            f"   Роль в предложении: {info['role']}\n"
+            f"   Морфологические признаки:\n"
+            f"      {info['morphological_features'].replace(', ', '\n      ')}\n"
+            f"   Предложение №: {info['sentence_index']}\n"
+            f"{'-' * 50}\n"
         )
     return result
 
@@ -42,3 +43,8 @@ def create_ui():
     text_area.pack(padx=10, pady=10)
 
     return root
+
+
+if __name__ == "__main__":
+    root = create_ui()
+    root.mainloop()
