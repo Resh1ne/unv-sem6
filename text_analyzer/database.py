@@ -35,5 +35,15 @@ class Database:
             cursor.execute("SELECT * FROM words")
             return cursor.fetchall()
 
+    @staticmethod
+    def search_words_by_substring(substring):
+        with sqlite3.connect(DATABASE_NAME) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT * FROM words
+                WHERE word LIKE ?
+            ''', (f"%{substring}%",))
+            return cursor.fetchall()
+
 
 Database.initialize()
