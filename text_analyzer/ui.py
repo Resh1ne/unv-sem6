@@ -19,7 +19,7 @@ def open_file(text_area):
 
             processing_time = end_time - start_time
 
-            result = format_result(analyzed_words)
+            result = format_result_with_styles(analyzed_words)
             result += f"\nВремя обработки текста: {processing_time:.4f} секунд\n"
 
             text_area.delete(1.0, tk.END)
@@ -28,7 +28,7 @@ def open_file(text_area):
             messagebox.showerror("Ошибка", f"Не удалось обработать файл: {e}")
 
 
-def format_result(analyzed_words):
+def format_result_with_styles(analyzed_words):
     result = "Список слов с информацией:\n\n"
     for info in analyzed_words:
         result += (
@@ -48,8 +48,9 @@ def view_database(text_area):
         result += (
             f"ID: {word[0]}\n"
             f"Слово: {word[1]}\n"
-            f"Роль: {word[2]}\n"
-            f"Признаки: {word[3]}\n"
+            f"Лексема: {word[2]}\n"
+            f"Роль в предложении: {word[3]}\n"
+            f"Морфологические признаки: {word[4]}\n"
             f"{'-' * 50}\n"
         )
     text_area.delete(1.0, tk.END)
@@ -67,6 +68,7 @@ def show_help():
     1. Открытие текстового файла:
        - Приложение позволяет открывать текстовые файлы (.txt) для анализа.
        - После открытия файла текст анализируется, и каждое слово разбирается на:
+         - Лемму (нормальную форму слова).
          - Роль в предложении (например, подлежащее, сказуемое).
          - Морфологические признаки (часть речи, число, время и т.д.).
 
@@ -86,6 +88,9 @@ def show_help():
 
     6. Поиск слова:
        - Вы можете найти слово в базе данных, используя поле ввода и кнопку "Найти".
+       
+    7. Редактирование:
+       - Для редактирования записи, выделите её, а затей нажмите кнопку "Редактировать".
     """
 
     help_label = tk.Label(help_window, text=help_text, justify=tk.LEFT, padx=10, pady=10, font=("Arial", 12))
@@ -117,12 +122,70 @@ def perform_search(search_entry, text_area):
         text_area.insert(tk.END, result)
 
 
+def edit_word(text_area):
+    try:
+        selected_text = text_area.get(tk.SEL_FIRST, tk.SEL_LAST)
+    except tk.TclError:
+        messagebox.showwarning("Ошибка", "Выделите запись для редактирования.")
+        return
+
+    try:
+        word_id = int(selected_text.split("\n")[0].split(": ")[1])
+    except (IndexError, ValueError):
+        messagebox.showwarning("Ошибка", "Не удалось извлечь ID записи.")
+        return
+
+    words = Database.get_all_words()
+    word_info = next((word for word in words if word[0] == word_id), None)
+    if not word_info:
+        messagebox.showwarning("Ошибка", "Запись не найдена.")
+        return
+
+    edit_window = tk.Toplevel()
+    edit_window.title("Редактирование записи")
+    edit_window.geometry("500x400")
+
+    tk.Label(edit_window, text="Слово:").pack(pady=5)
+    word_entry = ttk.Entry(edit_window, width=40, font=("Arial", 12))
+    word_entry.pack(pady=5)
+    word_entry.insert(0, word_info[1])
+
+    tk.Label(edit_window, text="Лемма:").pack(pady=5)
+    lemma_entry = ttk.Entry(edit_window, width=40, font=("Arial", 12))
+    lemma_entry.pack(pady=5)
+    lemma_entry.insert(0, word_info[2])
+
+    tk.Label(edit_window, text="Роль:").pack(pady=5)
+    role_entry = ttk.Entry(edit_window, width=40, font=("Arial", 12))
+    role_entry.pack(pady=5)
+    role_entry.insert(0, word_info[3])
+
+    tk.Label(edit_window, text="Морфологические признаки:").pack(pady=5)
+    features_entry = ttk.Entry(edit_window, width=40, font=("Arial", 12))
+    features_entry.pack(pady=5)
+    features_entry.insert(0, word_info[4])
+
+    def save_edited_word():
+        updated_info = {
+            "word": word_entry.get(),
+            "lemma": lemma_entry.get(),
+            "role": role_entry.get(),
+            "morphological_features": features_entry.get()
+        }
+        Database.update_word(word_id, updated_info)
+        messagebox.showinfo("Успех", "Запись успешно обновлена.")
+        edit_window.destroy()
+        view_database(text_area)  # Обновляем отображение базы данных
+
+    save_button = ttk.Button(edit_window, text="Сохранить", command=save_edited_word)
+    save_button.pack(pady=10)
+
+
 def create_ui():
-    root = ThemedTk(theme="arc")  # Тема "arc" — современная и стильная
+    root = ThemedTk(theme="arc")
     root.title("Анализатор текста")
     root.geometry("800x600")
 
-    # Настройка шрифтов
     style = ttk.Style()
     style.configure("TButton", font=("Arial", 12), padding=10)
     style.configure("TLabel", font=("Arial", 12))
@@ -137,11 +200,19 @@ def create_ui():
     view_db_button = ttk.Button(toolbar, text="Просмотреть базу данных", command=lambda: view_database(text_area))
     view_db_button.pack(side=tk.LEFT, padx=5, pady=5)
 
+    edit_button = ttk.Button(toolbar, text="Редактировать", command=lambda: edit_word(text_area))
+    edit_button.pack(side=tk.LEFT, padx=5, pady=5)
+
     help_button = ttk.Button(root, text="Помощь", command=show_help)
-    help_button.place(relx=0.95, rely=0.02, anchor=tk.NE)  # Размещаем в правом верхнем углу
+    help_button.place(relx=0.95, rely=0.02, anchor=tk.NE)
 
     text_area = scrolledtext.ScrolledText(root, wrap=tk.WORD, width=90, height=25, font=("Arial", 12))
     text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    text_area.tag_configure("header", font=("Arial", 14, "bold"), foreground="blue")
+    text_area.tag_configure("word", font=("Arial", 12, "bold"), foreground="green")
+    text_area.tag_configure("role", font=("Arial", 12), foreground="purple")
+    text_area.tag_configure("features", font=("Arial", 12), foreground="black")
 
     search_frame = ttk.Frame(root)
     search_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=10, pady=10)

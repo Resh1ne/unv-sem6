@@ -22,6 +22,7 @@ class TextProcessor:
 
                 info = {
                     "word": token.text.lower(),
+                    "lemma": token.lemma_,
                     "role": TextProcessor.get_word_role(token),
                     "morphological_features": TextProcessor.get_morphological_features(token)
                 }
@@ -37,7 +38,10 @@ class TextProcessor:
 
     @staticmethod
     def get_morphological_features(token):
-        features = [f"Часть речи: {POS_TRANSLATION.get(token.pos_, 'Неизвестно')}"]
+        features = [
+            f"Лексема: {token.lemma_}",
+            f"Часть речи: {POS_TRANSLATION.get(token.pos_, 'Неизвестно')}"
+        ]
 
         if token.morph.get("Number"):
             features.append(f"Число: {NUMBER_TRANSLATION.get(token.morph.get('Number')[0], 'Неизвестно')}")
