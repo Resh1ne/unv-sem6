@@ -1,4 +1,5 @@
 import spacy
+from database import Database
 from translations import (
     POS_TRANSLATION, NUMBER_TRANSLATION, TENSE_TRANSLATION, CASE_TRANSLATION,
     DEGREE_TRANSLATION, DEP_TRANSLATION, PERSON_TRANSLATION, ASPECT_TRANSLATION,
@@ -12,9 +13,9 @@ class TextProcessor:
     @staticmethod
     def process_text(text):
         doc = nlp(text)
-
         analyzed_words = []
-        for sent_index, sent in enumerate(doc.sents, start=1):
+
+        for sent in doc.sents:
             for token in sent:
                 if token.is_punct or token.is_space:
                     continue
@@ -22,15 +23,13 @@ class TextProcessor:
                 info = {
                     "word": token.text.lower(),
                     "role": TextProcessor.get_word_role(token),
-                    "morphological_features": TextProcessor.get_morphological_features(token),
-                    "sentence_index": sent_index
+                    "morphological_features": TextProcessor.get_morphological_features(token)
                 }
                 analyzed_words.append(info)
+                Database.save_word(info)
 
         analyzed_words.sort(key=lambda x: x['word'])
         return analyzed_words
-
-
 
     @staticmethod
     def get_word_role(token):
