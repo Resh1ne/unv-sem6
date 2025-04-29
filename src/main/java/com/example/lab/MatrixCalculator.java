@@ -87,18 +87,20 @@ public class MatrixCalculator {
         callsOfMultiplying += 7;
         callsOfDifference += 3;
         callsOfSumm += 2;
-        F[i][j][k] = (aToB(k, j) * (2. * E[k] - 1.) * E[k] +
-                bToA(k, i) * (1. + (4. * aToB(k, j) - 2.) * E[k]) * (1. - E[k]));
+
+        double a = A[i][k];
+        double b = B[k][j];
+
+        double aImplB = implication(a, b);
+        double bImplA = implication(b, a);
+
+        F[i][j][k] = (aImplB * (2. * E[k] - 1.) * E[k] +
+                bImplA * (1. + (4. * aImplB - 2.) * E[k]) * (1. - E[k]));
     }
 
-    private double aToB(int k, int j) {
+    private double implication(double x, double y) {
         callsOfCom++;
-        return B[k][j] >= 0 ? 0. : B[k][j];
-    }
-
-    private double bToA(int k, int i) {
-        callsOfCom++;
-        return A[i][k] >= 0 ? 0. : A[i][k];
+        return Math.max(1 - x, y);
     }
 
     private void computeDMatrix() {
@@ -116,11 +118,8 @@ public class MatrixCalculator {
     }
 
     private double aAndB(int i, int j, int k) {
-        double res = A[i][k] + B[k][j] - 1.;
         callsOfCom++;
-        callsOfSumm++;
-        callsOfDifference++;
-        return res < 0 ? 0. : res;
+        return Math.min(A[i][k], B[k][j]);
     }
 
     private void computeCMatrix() {
