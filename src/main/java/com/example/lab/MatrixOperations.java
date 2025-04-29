@@ -19,18 +19,14 @@ public class MatrixOperations {
         int n = scanner.nextInt();
         scanner.close();
 
-        // Инициализация всех компонентов
         MatrixCalculator calculator = new MatrixCalculator(m, p, q, n);
         PerformanceAnalyzer analyzer = new PerformanceAnalyzer(calculator);
 
-        // Выполнение вычислений
         calculator.computeAll();
 
-        // Вывод результатов
         ResultPrinter printer = new ResultPrinter(calculator);
         printer.printAllResults();
 
-        // Анализ производительности
         analyzer.calculatePerformance();
         printer.printPerformanceResults(analyzer);
     }

@@ -162,7 +162,6 @@ public class MatrixCalculator {
         return fFunc(i, j) * dFunc(i, j);
     }
 
-    // Геттеры для доступа к данным
     public double[][] getA() {
         return A;
     }

@@ -85,7 +85,6 @@ public class PerformanceAnalyzer {
         Diff = (double) Tn / Lavg;
     }
 
-    // Геттеры для результатов анализа
     public int getT1() {
         return T1;
     }
