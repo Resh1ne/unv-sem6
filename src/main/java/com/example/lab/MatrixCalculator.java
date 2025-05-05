@@ -100,6 +100,7 @@ public class MatrixCalculator {
 
     private double implication(double x, double y) {
         callsOfCom++;
+        callsOfDifference++;
         return Math.max(1 - x, y);
     }
 
