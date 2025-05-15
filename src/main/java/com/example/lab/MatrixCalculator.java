@@ -170,10 +170,10 @@ public class MatrixCalculator {
         }
 
         if (6 <= n && n <= m * 3) {
-            int newN = n - n % 3;
-            int count = (int) Math.ceil((m * 3.0) / newN);
-            double temp = (double) (Tn - oldTn) / m;
-            Tn -= (m - count) * temp;
+            int newN = n - n % 3; // будет задействоваться максимальное n кратно 3
+            int count = (int) Math.ceil((m * 3.0) / newN); // сколько должно выполниться последоватеьных операций
+            double temp = (double) (Tn - oldTn) / m; //сколько по времени одна итерация
+            Tn -= (m - count) * temp; // отнимаем операции, которые можно распараллелить
         } else if (n >= m * 3) {
             double temp = (double) (Tn - oldTn) / m;
             Tn = oldTn + (int) temp;
@@ -205,10 +205,10 @@ public class MatrixCalculator {
         }
 
         if (2 <= n && n <= m * 1) {
-            int newN = n - n % 1;
-            int count = (int) Math.ceil((m * 1.0) / newN);
-            double temp = (double) (Tn - oldTn) / m;
-            Tn -= (m - count) * temp;
+            int newN = n - n % 1; // будет задействоваться элементов кратное 1
+            int count = (int) Math.ceil((m * 1.0) / newN); // сколько должно выполниться последоватеьных операций
+            double temp = (double) (Tn - oldTn) / m; // сколько по времени одна итерация
+            Tn -= (m - count) * temp; // отнимаем операции, которые можно распараллелить
         } else if (n >= m * 1) {
             double temp = (double) (Tn - oldTn) / m;
             Tn = oldTn + (int) temp;
